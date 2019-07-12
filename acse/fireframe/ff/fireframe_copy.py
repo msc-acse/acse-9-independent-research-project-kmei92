@@ -8,6 +8,7 @@ default_solver_parameters = {
     'degree': defaultdict(lambda: 1), # default function space dimension
     'family': defaultdict(lambda: 'CG'), # default trial/test functions
     'linear_solver': defaultdict(lambda: 'gmres'),
+    'order' : defaultdict(lambda: 1), # default order of function spaces
     'space' : defaultdict(lambda: fd.FunctionSpace), # default functionspace
     'subsystem_class': defaultdict(lambda: None),
     'T': 1., # End time for simulation,
@@ -44,8 +45,9 @@ class PDESystem:
 #         for n in system_composition:
 #             self.names.append(n) # run over all individual components
             
+        self.pdesubsystems = dict((name, None) for name in self.system_names)
+        self.bc = dict((name,   []) for name in self.system_names)
 
-                
         self.setup_system()
         
     def setup_system(self):
@@ -55,19 +57,27 @@ class PDESystem:
             for n in sub_system:       # Run over all individual components
                 self.names.append(n)
                 
-        self.define_function_spaces(self.mesh, self.prm['degree'], # removed self.mesh
-                              self.prm['space'], self.prm['family']) # removed cons
-        self.setup_subsystems()
-        self.pdesubsystems = dict((name, None) for name in self.system_names)
+        self.define_function_spaces(self.mesh, self.prm['degree'], self.prm['space'], 
+                                    self.prm['order'], self.prm['family']) # removed cons
+        self.setup_subsystems(self.prm['order'])
 #         self.normalize     = dict((name, None) for name in self.system_names) # not used
-        self.bc            = dict((name,   []) for name in self.system_names)
-        self.setup_form_args()
+        self.setup_form_args(self.prm['order'])
         
-    def define_function_spaces(self, mesh, degree, space, family):
+    def define_function_spaces(self, mesh, degree, space, order, family):
         """Define functionspaces for names and system_names"""
-        V = self.V = dict((name, space[name](mesh, family[name], degree[name])) for name in self.names)
+        V = {}
+        for name in self.names:
+            if order[name] > 1:
+                total_space = []
+                single_space = fd.FunctionSpace(mesh, family[name], degree[name])
+                total_space = [single_space for i in range(order[name])]
+                V.update(dict([(name, space[name](total_space))]))
+            else:
+                V.update(dict([(name, space[name](mesh, family[name], degree[name]))]))
+                
+        self.V = V
 
-    def setup_subsystems(self):
+    def setup_subsystems(self, order):
         V, sys_comp = self.V, self.system_composition
 
 #         q = dict((name, None) for name in sys_names)
@@ -82,12 +92,18 @@ class PDESystem:
         for sub_sys in sys_comp:
 #             if len(sub_sys) > 1: # (this line is unnecessary)
             for name in sub_sys:
-                q.update(dict([(name+'_trl', fd.TrialFunction(V[name]))]))
-                v.update(dict([(name+'_tst', fd.TestFunction(V[name]))]))
+                if order[name] > 1:
+                    q.update(dict( (name+'_trl%i'%(num), fd.TrialFunctions(V[name])[num-1]) 
+                                  for num in range(1, order[name]+1)))
+                    v.update(dict( (name+'_tst%i'%(num), fd.TestFunctions(V[name])[num-1]) 
+                                  for num in range(1, order[name]+1)))
+                else:
+                    q.update(dict( [ (name+'_trl', fd.TrialFunction(V[name])) ] ) )
+                    v.update(dict( [ (name+'_tst', fd.TestFunction(V[name])) ] ) )
 
         self.qt, self.vt = q, v
     
-    def setup_form_args(self):
+    def setup_form_args(self, order):
         V, sys_comp = self.V, self.system_composition
         form_args = {}
 #         for name in sys_comp:
@@ -96,8 +112,18 @@ class PDESystem:
         for sub_sys in sys_comp:
 #             if len(sub_sys) > 1:
             for name in sub_sys:
-                form_args.update(dict( [ (name + '_', fd.Function(V[name]) ) ] ) ) # current
-                form_args.update(dict( [ (name + '_n', fd.Function(V[name]) ) ] ) )
+                if order[name] > 1:
+                    form_args.update(dict( [ (name + '_', fd.Function(V[name])) ] ) ) # next iteration
+                    form_args.update(dict( [ (name + '_n', fd.Function(V[name])) ] ) ) # current
+                    form_args.update(dict( (name+'_%i'%(num), form_args[name+'_'][num-1]) # gets individual components 
+                                          for num in range(1, order[name]+1)))
+                    form_args.update(dict( (name+'_n%i'%(num), form_args[name+'_n'][num-1]) # gets individual components
+                                          for num in range(1, order[name]+1))) 
+                else:
+                    form_args.update(dict( [ (name + '_', fd.Function(V[name])) ] ) ) # next iteration
+                    form_args.update(dict( [ (name + '_n', fd.Function(V[name])) ] ) ) # current
+                    
+                
         
         form_args.update(self.qt)
         form_args.update(self.vt)
@@ -115,6 +141,10 @@ class PDESystem:
             forms_cnt.append(self.pdesubsystems[name].forms_cnt)
             for var in self.pdesubsystems[name].vars:
                 sub_vars.append(var)
+                
+        print('solvers: ', solvers)
+        print('forms_cnt: ', forms_cnt)
+        print('sub_vars: ', sub_vars)
          
         t0 = self.t0
         tend = self.tend
@@ -124,13 +154,12 @@ class PDESystem:
             cnt = 0
             for count in forms_cnt:
                 for i in range(count):
+#                     print(cnt)
                     solvers[cnt].solve()
                     cnt+=1
-            cnt = 0
-            for count in forms_cnt:
-                for i in range(count):
-                    self.form_args[sub_vars[cnt]+'_n'].assign(self.form_args[sub_vars[cnt]+'_'])
-                    cnt+=1
+            
+            for name in self.names:
+                self.form_args[name+'_n'].assign(self.form_args[name+'_'])
             
             t0 += dt
             if( np.abs( t0 - np.round(t0,decimals=0) ) < 1.e-8): 
@@ -180,11 +209,12 @@ class Subdict(dict):
         return self[key]
 
 class PDESubsystembase:
-    def __init__(self, solver_namespace, sub_system, bcs, forms_cnt):        
+    def __init__(self, solver_namespace, var_sequence, name, bcs, forms_cnt):        
         self.solver_namespace = solver_namespace
-        self.vars = sub_system
+        self.vars = var_sequence
         self.mesh = solver_namespace['mesh']
         self.prm = solver_namespace['prm']
+        self.name = name
         self.bcs = bcs
         self.forms_cnt = forms_cnt
         
@@ -210,29 +240,44 @@ class PDESubsystembase:
         self.a = dict.fromkeys(x, None)
         self.L = dict.fromkeys(x, None)
         
-        for i in range(1, self.forms_cnt+1):
-            self.F[i] = eval('self.form%d(**form_args)'%(i))
-            self.a[i], self.L[i] = fd.system(self.F[i])
+        if self.prm['order'][self.name] > 1:
+            for i in range(1, self.forms_cnt+1):
+                self.F[i] = eval('self.form%d(**form_args)'%(i))
+                print('self.form%d(**form_args)'%(i))
+        else:
+            for i in range(1, self.forms_cnt+1):
+                self.F[i] = eval('self.form%d(**form_args)'%(i))
+                self.a[i], self.L[i] = fd.system(self.F[i])
         
     def setup_prob(self):
         self.problems = [] # create a list
-        for i in range(1, self.forms_cnt+1):
-            self.problems.append(fd.LinearVariationalProblem(self.a[i], self.L[i], # solve for the fd.Function
+        if self.prm['order'][self.name] > 1: # for nonlinear problems
+            for i in range(1, self.forms_cnt+1):
+                print(self.vars[i-1]+'_')
+                self.problems.append(fd.NonlinearVariationalProblem(self.F[i], self.form_args[self.vars[i-1]+'_'], 
+                                                                    bcs=self.bcs[i-1]))
+        else:
+            for i in range(1, self.forms_cnt+1):
+                self.problems.append(fd.LinearVariationalProblem(self.a[i], self.L[i], # solve for the fd.Function
                                                          self.form_args[self.vars[i-1]+'_'],
                                                          bcs=self.bcs[i-1]))
             
     def setup_solver(self):
         self.solvers = [] # create a list
-        for i in range(self.forms_cnt):
-            self.solvers.append(fd.LinearVariationalSolver(self.problems[i], 
+        if self.prm['order'][self.name] > 1:
+             for i in range(self.forms_cnt):
+                self.solvers.append(fd.NonlinearVariationalSolver(self.problems[i]))
+        else:
+            for i in range(self.forms_cnt):
+                self.solvers.append(fd.LinearVariationalSolver(self.problems[i], 
                                                     solver_parameters=
-                                                           {'ksp_type': self.prm['linear_solver']['up'],
-                                                                       'pc_type': self.prm['precond']['up']}))
+                                                           {'ksp_type': self.prm['linear_solver'][self.name],
+                                                                       'pc_type': self.prm['precond'][self.name]}))
 
 class PDESubsystem(PDESubsystembase):
     """Base class for most PDESubSystems"""
-    def __init__(self, solver_namespace, sub_system, bcs, forms_cnt):
-        PDESubsystembase.__init__(self, solver_namespace, sub_system, bcs, forms_cnt)
+    def __init__(self, solver_namespace, name, sub_system, bcs, forms_cnt):
+        PDESubsystembase.__init__(self, solver_namespace, name, sub_system, bcs, forms_cnt)
         
     
 #     def retrieve_solvers(self):
@@ -252,4 +297,5 @@ class PDESubsystem(PDESubsystembase):
 #             t0 += dt
 #             if( np.abs( t0 - np.round(t0,decimals=0) ) < 1.e-8): 
 #                 print('time = {0:.3f}'.format(t0))
+
 
