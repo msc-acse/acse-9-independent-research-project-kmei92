@@ -22,17 +22,17 @@ class pde_solver(PDESystem):
 		self.pdesubsystems[name] = self.subsystem[name](vars(self), var_seq, name, bcs, forms_cnt)
 
 class reactions(PDESubsystem):
-    
+
 	def form1(self, c_1, c_n1, c_tst1, c_2, c_n2, c_tst2, c_3, c_n3, c_tst3, u_, **kwargs):
 		eps = fd.Constant(0.01)
 		K = fd.Constant(10.0)
 		k = fd.Constant(self.prm['dt'])
-		
+
 		x, y = fd.SpatialCoordinate(self.mesh)
 		f_1 = fd.conditional(pow(x-0.1, 2)+pow(y-0.1,2)<0.05*0.05, 0.1, 0)
 		f_2 = fd.conditional(pow(x-0.1, 2)+pow(y-0.3,2)<0.05*0.05, 0.1, 0)
 		f_3 = fd.Constant(0.0)
-		
+
 		Form = ((c_1 - c_n1) / k)*c_tst1*fd.dx \
 		+ ((c_2 - c_n2) / k)*c_tst2*fd.dx \
 		+ ((c_3 - c_n3) / k)*c_tst3*fd.dx \
@@ -49,13 +49,13 @@ class reactions(PDESubsystem):
 		- f_1*c_tst1*fd.dx \
 		- f_2*c_tst2*fd.dx \
 		- f_3*c_tst3*fd.dx
-		
+
 		return Form
 
 if __name__ == '__main__':
 	solver_parameters  = copy.deepcopy(default_solver_parameters)
 
-	solver_parameters = recursive_update(solver_parameters, 
+	solver_parameters = recursive_update(solver_parameters,
 	{
 	'space': {'u': fd.VectorFunctionSpace},
 	'degree': {'u': 2},
@@ -64,7 +64,7 @@ if __name__ == '__main__':
 	'precond': {'up': 'sor'}}
 	)
 
-	mesh = fd.Mesh("../../../meshes/flow_past_cylinder.msh")
+	mesh = fd.Mesh("../../../meshes/cylinder.msh")
 	solver = pde_solver([['u', 'p']], mesh, solver_parameters)
 
 	solver_parameters = recursive_update(solver_parameters,
@@ -134,4 +134,3 @@ if __name__ == '__main__':
 	fd.plot(c3,axes=ax6)
 	ax6.axis('equal')
 	plt.pause(3)
-    
