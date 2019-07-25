@@ -1,0 +1,12 @@
+# Blacklist everything in the same directory
+/*
+
+#Whitelist some files
+!.gitignore
+!README.md
+!requirements.txt
+!.travis.yml
+!acse/fireframe
+!acse/meshes
+!acse/test_notebooks
+
