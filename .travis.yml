@@ -6,18 +6,18 @@ python:
 addons:
   apt:
     packages:
-        -build-essential
-        -cmake
-        -gfortran
-        -libblas-dev
-        -liblapack-dev
-        -libmpich-dev
-        -mercurial
-        -mpich
-        -python3-pip
-        -python3-tk
-        -python3-venv
-        -libboost-dev
+        - build-essential
+        - cmake
+        - gfortran
+        - libblas-dev
+        - liblapack-dev
+        - libmpich-dev
+        - mercurial
+        - mpich
+        - python3-pip
+        - python3-tk
+        - python3-venv
+        - libboost-dev
 
 before_install:
     - pip install -U pip
