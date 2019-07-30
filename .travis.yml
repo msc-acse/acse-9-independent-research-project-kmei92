@@ -1,7 +1,24 @@
+# languages
 language: python
 python:
     - "3.6"
 
+addons:
+  apt:
+    packages:
+        -build-essential
+        -cmake
+        -gfortran
+        -libblas-dev
+        -liblapack-dev
+        -libmpich-dev
+        -mercurial
+        -mpich
+        -python3-pip
+        -python3-tk
+        -python3-venv
+        -libboost-dev
+        
 # command to install dependencies
 install:
     - curl -O https://raw.githubusercontent.com/firedrakeproject/firedrake/master/scripts/firedrake-install
