@@ -18,6 +18,10 @@ addons:
         -python3-tk
         -python3-venv
         -libboost-dev
+
+before_install:
+    - pip install -U pip
+    - pip install -U virtualenv
         
 # command to install dependencies
 install:
