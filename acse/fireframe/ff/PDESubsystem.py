@@ -23,8 +23,8 @@ class PDESubsystem:
 	def setup_base(self):
 		self.query_args()
 		self.get_form(self.form_args, self.constants)
-		self.setup_prob()
-		self.setup_solver()
+		# self.setup_prob()
+		# self.setup_solver()
 
 	def query_args(self):
 		"""
@@ -40,9 +40,9 @@ class PDESubsystem:
 		self.form_args = form_args
 
 		#boundary set up
-		self.bcs = {}
-		for var, boundaries in self.system_bcs.items():
-			self.bcs.update([(var, boundaries[0])])
+		# self.bcs = {}
+		# for var, boundaries in self.system_bcs.items():
+		# 	self.bcs.update([(var, boundaries[0])])
 		# print('bcs', self.bcs)
 
 
@@ -70,11 +70,12 @@ class PDESubsystem:
 				i+=1
 
 	def setup_prob(self):
-		self.problems = [] # create a list
+		self.problems = [] # create a list of problems to be solved
 		bounds = self.bcs # create a copy of the boundary conditions
-
+		print(bounds)
 		i = 1 # need this index to create corresponding problems
 		for name in self.vars:
+			print(name)
 			if bounds[name]: # checks if there are boundary conditions associated with this variable
 				if self.prm['order'][name] > 1: # for nonlinear problems
 					# print(name+'_')
@@ -83,8 +84,11 @@ class PDESubsystem:
 					# bounds[name].pop(0)
 				else:
 					# print('setting up linear problem')
-					self.problems.append(fd.LinearVariationalProblem(self.a[i], self.L[i], self.form_args[name+'_'], bcs=bounds[name][0]))
-					i += 1
+					try:
+						self.problems.append(fd.LinearVariationalProblem(self.a[i], self.L[i], self.form_args[name+'_'], bcs=bounds[name][0]))
+						i += 1
+					except:
+						self.problems.append(fd.NonlinearVariationalProblem(self.F[i], self.form_args[name+'_'], bcs=bounds[name][0]))
 					# bounds[name].pop(0)
 			else:
 				if self.prm['order'][name] > 1: # for nonlinear problems

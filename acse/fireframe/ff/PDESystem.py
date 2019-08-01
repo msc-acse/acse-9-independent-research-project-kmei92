@@ -97,13 +97,12 @@ class PDESystem:
 			for n in sub_system:       # Run over all individual components
 				self.names.append(n)
 
-		self.bc.update(dict((name,   dict((name, [[None], [None]]) for name in self.names)) for name in self.system_names)) # setup boundary condition lists for each subsystem
-		self.define_function_spaces(self.mesh, self.prm['degree'], self.prm['space'],
-		self.prm['order'], self.prm['family']) # removed cons
-		self.setup_subsystems(self.prm['order'])
+		self.bc.update(dict((name,   dict((name, [[None, None]] * self.prm['order'][name]) for name in self.names)) for name in self.system_names)) # setup boundary condition lists for each subsystem
+		self.setup_function_spaces(self.mesh, self.prm['degree'], self.prm['space'], self.prm['order'], self.prm['family']) # removed cons
+		self.setup_trial_test(self.prm['order'])
 		self.setup_form_args(self.prm['order'])
 
-	def define_function_spaces(self, mesh, degree, space, order, family):
+	def setup_function_spaces(self, mesh, degree, space, order, family):
 		"""
 		This function was adapted from Mikael Mortensen on July, 2019.
 		Source code can be found here:
@@ -124,7 +123,18 @@ class PDESystem:
 				V.update(dict([(name, space[name](mesh, family[name], degree[name]))]))
 		self.V = V
 
-	def setup_subsystems(self, order):
+	def update_function_spaces(self, name_list, mesh, degree, space, order, family):
+
+		for name in name_list:
+			if order[name] > 1:
+				total_space = []
+				single_space = fd.FunctionSpace(mesh, family[name], degree[name])
+				total_space = [single_space for i in range(order[name])]
+				self.V.update(dict([(name, space[name](total_space))]))
+			else:
+				self.V.update(dict([(name, space[name](mesh, family[name], degree[name]))]))
+
+	def setup_trial_test(self, order):
 		"""
 		This function was adapted from Mikael Mortensen on July, 2019.
 		Source code can be found here:
@@ -149,6 +159,16 @@ class PDESystem:
 					v.update(dict( [ (name+'_tst', fd.TestFunction(V[name])) ] ) )
 
 		self.qt, self.vt = q, v
+
+	def update_trial_test(self, name_list, order):
+		V = self.V
+		for name in name_list:
+			if order[name] > 1:
+				self.qt.update(dict( (name+'_trl%i'%(num), fd.TrialFunctions(V[name])[num-1]) for num in range(1, order[name]+1)))
+				self.vt.update(dict( (name+'_tst%i'%(num), fd.TestFunctions(V[name])[num-1]) for num in range(1, order[name]+1)))
+			else:
+				self.qt.update(dict( [ (name+'_trl', fd.TrialFunction(V[name])) ] ) )
+				self.vt.update(dict( [ (name+'_tst', fd.TestFunction(V[name])) ] ) )
 
 	def setup_form_args(self, order):
 		"""
@@ -178,6 +198,33 @@ class PDESystem:
 
 		self.form_args = form_args
 
+	def update_form_args(self, name_list, order):
+		V = self.V
+		for name in name_list:
+			if order[name] > 1:
+				self.form_args.update(dict( [ (name + '_', fd.Function(V[name])) ] ) ) # next iteration
+				self.form_args.update(dict( [ (name + '_n', fd.Function(V[name])) ] ) ) # current
+				self.form_args.update(dict( (name+'_%i'%(num), self.form_args[name+'_'][num-1]) for num in range(1, order[name]+1))) # gets individual components
+				self.form_args.update(dict( (name+'_n%i'%(num), self.form_args[name+'_n'][num-1]) for num in range(1, order[name]+1))) # gets individual components
+			else:
+				self.form_args.update(dict( [ (name + '_', fd.Function(V[name])) ] ) ) # next iteration
+				self.form_args.update(dict( [ (name + '_n', fd.Function(V[name])) ] ) ) # current
+
+		self.form_args.update(self.qt)
+		self.form_args.update(self.vt)
+
+	def obtain_forms(self):
+		forms, a, L = [], [], []
+		for subsystem in self.pdesubsystems:
+			for key, form in self.pdesubsystems[subsystem].F.items():
+				forms.append(form)
+			for key, left in self.pdesubsystems[subsystem].a.items():
+				a.append(left)
+			for key, right in self.pdesubsystems[subsystem].L.items():
+				L.append(right)
+
+		self.forms, self.a, self.L = forms, a, L
+
 	def solve(self, time_update=False):
 		"""
 		This function was adapted from Mikael Mortensen on July, 2019.
@@ -187,59 +234,69 @@ class PDESystem:
 		Description:
 		This function calls on each of the available pdesubsystems and solve for their respective variables
 		"""
-		forms = []
-		solvers = []
-		''''sub_vars = []''''
-		for name in self.system_names:
-			'''for solver in self.pdesubsystems[name].solvers:
-				solvers.append(solver)'''
-			'''for var in self.pdesubsystems[name].vars:
-				sub_vars.append(var)'''
-			for key, form in self.pdesubsystems[name].F.items():
-				forms.append(form)
 
-		boundaries = [None] * len(self.var_seq) # create how many boundaries
+		self.obtain_forms()
+
+		boundaries = [] # create how many boundaries
+		for var in self.var_seq:
+			boundaries.extend([None]*self.prm['order'][var])
+
 		set1 = set(self.var_seq)
 		abacus = dict.fromkeys(set1, 0)
-		counter = 0
+		print(boundaries)
+		# print(abacus)
 
+		counter = 0
+		print(self.var_seq)
 		for var in self.var_seq:
-			for system in self.bc:
-				if var in abacus and len(self.bc[system][var][0]) > abacus[var]:
-					abacus[var] += 1
-					boundaries[counter] = self.bc[syste][var][0][abacus[var]]
-				counter += 1
+			for i in range(self.prm['order'][var]):
+				for system in self.bc:
+					if var in abacus and var in system and len(self.bc[system][var]) > abacus[var]:
+						print(var, system, counter)
+						boundaries[counter] = self.bc[system][var][abacus[var]][0]
+						abacus[var] += 1
+						counter += 1
+						break
+					elif var in abacus and var in system:
+						counter += 1
+						break
+		# print(boundaries)
 		# print('solvers: ', solvers)
 		# print('sub_vars: ', sub_vars)
 
 		tstart = self.tstart
 		tend = self.tend
 		dt = self.dt
-		print('solving from master PDESystem')
-		print(self.bc['T']['T'])
 
 		if time_update:
 			while tstart < tend:
-				# solve current timestep
-				'''for i in range(len(solvers)):
-					solvers[i].solve()'''
 				# solve current timestep variables
 				for i, var in enumerate(self.var_seq):
-					fd.solve(forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i])
+					try:
+						if self.prm['order'][var] > 1: # if mixedfunctionspace
+							fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i])
+						elif var in self.prm['ksp_type'] and var not in self.prm['precond']:
+							fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var]})
+						elif var not in self.prm['ksp_type'] and var in self.prm['precond']:
+							fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'pc_type': self.prm['precond'][var]})
+						else:
+							fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var], 'pc_type': self.prm['precond'][var]})
+					except:
+						if self.prm['order'][var] > 1: # if mixedfunctionspace
+							fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i])
+						elif var in self.prm['ksp_type'] and var not in self.prm['precond']:
+							fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var]})
+						elif var not in self.prm['ksp_type'] and var in self.prm['precond']:
+							fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'pc_type': self.prm['precond'][var]})
+						else:
+							fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var], 'pc_type': self.prm['precond'][var]})
+
+					# check if boundary conditions need to be updated
 					if i < len(self.bc_expr):
 						print('updated boundaries for %s' %var)
 						# update boundary conditions
 						boundaries[i] = [fd.DirichletBC(self.V[var], self.bc_expr[i][0], self.bc_expr[i][1])]
-					'''counter = 0
-					for system in self.bc:
-						# print(counter)
-						# print(self.bc_expr[0][1])
-						# print(self.bc[system][var][1])
-						print(self.bc[system][var][1])
-						if var in self.bc[system] and self.bc[system][var][1][counter] == 'update':
-							# print('updating %s' % var)
-							self.bc[system][var][0] = [fd.DirichletBC(self.V[var], self.bc_expr[counter][0], self.bc_expr[counter][1])]
-							counter += 1'''
+
 				# assign next timestep variables
 				for var in self.var_seq:
 					self.form_args[var+'_n'].assign(self.form_args[var+'_'])
@@ -253,13 +310,29 @@ class PDESystem:
 		else:
 			while tstart < tend:
 				# solve current timestep
-				for i in range(len(solvers)):
-					solvers[i].solve()
+				for i, var in enumerate(self.var_seq):
+					try:
+						if self.prm['order'][var] > 1: # if mixedfunctionspace
+							fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i])
+						elif var in self.prm['ksp_type'] and var not in self.prm['precond']:
+							fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var]})
+						elif var not in self.prm['ksp_type'] and var in self.prm['precond']:
+							fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'pc_type': self.prm['precond'][var]})
+						else:
+							fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var], 'pc_type': self.prm['precond'][var]})
+					except:
+						if self.prm['order'][var] > 1: # if mixedfunctionspace
+							fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i])
+						elif var in self.prm['ksp_type'] and var not in self.prm['precond']:
+							fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var]})
+						elif var not in self.prm['ksp_type'] and var in self.prm['precond']:
+							fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'pc_type': self.prm['precond'][var]})
+						else:
+							fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var], 'pc_type': self.prm['precond'][var]})
+
 				# assign next timestep variables
-				for var in sub_vars:
+				for var in self.var_seq:
 					self.form_args[var+'_n'].assign(self.form_args[var+'_'])
-
-
 				# time step
 				tstart += dt
 
@@ -277,6 +350,8 @@ class PDESystem:
 		This function allows users to create a new subsystem of PDEs with different variables within the overall
 		PDESystem class. The function automatically calls on setup_systems() function to generate the new function
 		spaces and form args
+
+		:arg composition: `list`
 		"""
 
 		if not isinstance(composition, list):
@@ -286,21 +361,16 @@ class PDESystem:
 
 		self.system_composition.append(composition)
 		self.prm = recursive_update(self.prm, parameters)
-		self.system_names = []
-		self.names = []
 
-		for sub_system in composition:
-			system_name = ''.join(sub_system)
-			self.bc.update(dict([(system_name,   dict((name, [[None], [None]]) for name in composition))])) # setup boundary condition lists for each subsystem
-			self.system_names.extend(system_name)
-			for n in sub_system:       # Run over all individual components
-				self.names.extend(n)
+		system_name = ''.join(composition)
+		self.bc.update(dict([(system_name,   dict((name, [[None, None]] * self.prm['order'][name]) for name in composition))])) # update boundary condition lists for each new variable
+		self.system_names.extend(system_name)
+		for n in composition:       # Run over all individual components
+			self.names.extend(n)
 
-		self.bc.update(dict((name,   dict((name, [[None], [None]]) for name in self.names)) for name in self.system_names)) # setup boundary condition lists for each subsystem
-		self.define_function_spaces(self.mesh, self.prm['degree'], self.prm['space'],
-		self.prm['order'], self.prm['family']) # removed cons
-		self.setup_subsystems(self.prm['order'])
-		self.setup_form_args(self.prm['order'])
+		self.update_function_spaces(composition, self.mesh, self.prm['degree'], self.prm['space'], self.prm['order'], self.prm['family'])
+		self.update_trial_test(composition, self.prm['order'])
+		self.update_form_args(composition, self.prm['order'])
 
 	def setup_initial(self, var, expression, mixedspace=False, **kwargs):
 		"""
