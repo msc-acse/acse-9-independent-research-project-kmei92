@@ -1,40 +1,16 @@
+sudo: required
+
 # languages
 language: python
 python:
     - "3.6"
     - "2.7"
-addons:
-  apt:
-    packages:
-        - build-essential
-        - cmake
-        - gfortran
-        - libblas-dev
-        - liblapack-dev
-        - libmpich-dev
-        - mercurial
-        - mpich
-        - python3-pip
-        - python3-tk
-        - python3-venv
-        - libboost-dev      
-# command to run scripts
-os:
-  - linux
 
-env:
-  global:
-    - CC=mpicc
-    # HACK: travis runs 12.04 for which the CMAKE version is too old to
-    # build Eigen, let PETSc build it instead. Fixed now.
-    - PETSC_CONFIGURE_OPTIONS="--download-eigen=0"
+services:
+    - docker
 
 before_install:
-  - pip install -U pip
-  - pip install -U virtualenv
+    - docker pull firedrakeproject/firedrake
 
-install:
-  - curl -O https://raw.githubusercontent.com/firedrakeproject/firedrake/master/scripts/firedrake-install
-  - travis_wait 30  python3 firedrake-install --disable-ssh 
-  - source firedrake/bin/activate
-  - pip install -r requirements.txt
+script: 
+    - travis_wait 20 docker build
