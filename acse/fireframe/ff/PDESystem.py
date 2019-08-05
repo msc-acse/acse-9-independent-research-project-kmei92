@@ -75,7 +75,6 @@ class PDESystem:
 
 		self.pdesubsystems = dict((name, None) for name in self.system_names)
 		self.bc = {}
-		self.bc_expr = [[None, None]]
 		self.var_seq = []
 
 		self.setup_system()
@@ -97,7 +96,6 @@ class PDESystem:
 			for n in sub_system:       # Run over all individual components
 				self.names.append(n)
 
-		self.bc.update(dict((name,   dict((name, [[None, None]] * self.prm['order'][name]) for name in self.names)) for name in self.system_names)) # setup boundary condition lists for each subsystem
 		self.setup_function_spaces(self.mesh, self.prm['degree'], self.prm['space'], self.prm['order'], self.prm['family']) # removed cons
 		self.setup_trial_test(self.prm['order'])
 		self.setup_form_args(self.prm['order'])
@@ -241,25 +239,21 @@ class PDESystem:
 		for var in self.var_seq:
 			boundaries.extend([None]*self.prm['order'][var])
 
-		set1 = set(self.var_seq)
-		abacus = dict.fromkeys(set1, 0)
-		print(boundaries)
+		abacus = dict.fromkeys(set(self.var_seq), 0)
+		# print(boundaries)
 		# print(abacus)
-
+		# print(self.bc['cd'])
 		counter = 0
-		print(self.var_seq)
+		# print(self.var_seq)
 		for var in self.var_seq:
 			for i in range(self.prm['order'][var]):
-				for system in self.bc:
-					if var in abacus and var in system and len(self.bc[system][var]) > abacus[var]:
-						print(var, system, counter)
-						boundaries[counter] = self.bc[system][var][abacus[var]][0]
-						abacus[var] += 1
-						counter += 1
-						break
-					elif var in abacus and var in system:
-						counter += 1
-						break
+				# print(abacus[var], len(self.bc[var]))
+				if len(self.bc[var]) > abacus[var]:
+					# print(var, counter)
+					boundaries[counter] = self.bc[var][abacus[var]][0]
+					abacus[var] += 1
+					counter += 1
+
 		# print(boundaries)
 		# print('solvers: ', solvers)
 		# print('sub_vars: ', sub_vars)
@@ -271,7 +265,9 @@ class PDESystem:
 		if time_update:
 			while tstart < tend:
 				# solve current timestep variables
+				abacus = dict.fromkeys(set(self.var_seq), 0)
 				for i, var in enumerate(self.var_seq):
+
 					try:
 						if self.prm['order'][var] > 1: # if mixedfunctionspace
 							fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i])
@@ -292,13 +288,15 @@ class PDESystem:
 							fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var], 'pc_type': self.prm['precond'][var]})
 
 					# check if boundary conditions need to be updated
-					if i < len(self.bc_expr):
-						print('updated boundaries for %s' %var)
-						# update boundary conditions
-						boundaries[i] = [fd.DirichletBC(self.V[var], self.bc_expr[i][0], self.bc_expr[i][1])]
+					if self.bc[var][abacus[var]][-1] == 'update':
+						# print('updated boundaries for %s' %var)
+						if self.prm['order'][var] > 1:
+							boundaries[i] = [fd.DirichletBC(self.V[var].sub(self.bc[var][abacus[var]][3]), self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])]
+						else:
+							boundaries[i] = [fd.DirichletBC(self.V[var], self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])]
 
-				# assign next timestep variables
-				for var in self.var_seq:
+					abacus[var] += 1
+					# assign next timestep variables
 					self.form_args[var+'_n'].assign(self.form_args[var+'_'])
 				# time step
 				tstart += dt
@@ -363,7 +361,6 @@ class PDESystem:
 		self.prm = recursive_update(self.prm, parameters)
 
 		system_name = ''.join(composition)
-		self.bc.update(dict([(system_name,   dict((name, [[None, None]] * self.prm['order'][name]) for name in composition))])) # update boundary condition lists for each new variable
 		self.system_names.extend(system_name)
 		for n in composition:       # Run over all individual components
 			self.names.extend(n)
@@ -392,9 +389,11 @@ class PDESystem:
 
 	def define(self, var_seq, name):
 		self.var_seq.extend(var_seq)
+		self.bc.update(dict((name, [[None, None, None, None, None]] * self.prm['order'][name] * self.var_seq.count(name)) for name in self.var_seq)) # setup boundary condition lists for each subsystem
+		# print(self.bc)
 		# try:
 		# 	self.pdesubsystems[name] = self.subsystem[name](vars(self), var_seq, name, self.constants, self.bc[name]) # index 0 for the list of boundary conditions
 		# except:
 		# 	print("self.subsystem[%s] is not defined" % (name))
 		# print(self.bc[name])
-		self.pdesubsystems[name] = self.subsystem[name](vars(self), var_seq, name, self.constants, self.bc[name]) # index 0 for the list of boundary conditions
+		self.pdesubsystems[name] = self.subsystem[name](vars(self), var_seq, self.constants) # index 0 for the list of boundary conditions

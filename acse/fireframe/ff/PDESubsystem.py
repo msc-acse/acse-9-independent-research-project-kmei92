@@ -8,15 +8,15 @@ class PDESubsystem:
 
 	Description:
 	"""
-	def __init__(self, solver_namespace, var_sequence, name, constants, bcs):
+	def __init__(self, solver_namespace, var_sequence, constants):
 		self.solver_namespace = solver_namespace
 		self.vars = var_sequence
 		self.mesh = solver_namespace['mesh']
 		self.prm = solver_namespace['prm']
-		self.name = name
+		# self.name = name
 		self.constants = constants
 		# print('subsystem_bcs', bcs)
-		self.system_bcs = bcs
+		# self.system_bcs = bcs
 		# print('system_bcs', self.system_bcs)
 		self.setup_base()
 
