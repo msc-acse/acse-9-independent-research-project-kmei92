@@ -8,6 +8,7 @@
 !.travis.yml
 !acse/fireframe
 !acse/meshes
+!acse/fireframe/ff/*
 !acse/test_notebooks
 !Dockerfile
-
+!acse/fireframe/ff/demo/*.ipynb

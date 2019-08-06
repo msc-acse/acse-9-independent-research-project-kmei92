@@ -13,3 +13,5 @@ before_install:
 
 script: 
     - travis_wait 20 docker build .
+    - cd fireframe/test
+    - pytest tests.py
