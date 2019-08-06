@@ -6,9 +6,7 @@
 !README.md
 !requirements.txt
 !.travis.yml
-!acse/fireframe
+!acse/fireframe/*
 !acse/meshes
-!acse/fireframe/ff/*
 !acse/test_notebooks
 !Dockerfile
-!acse/fireframe/ff/demo/*.ipynb
