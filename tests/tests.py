@@ -1,4 +1,3 @@
-import pytest
 from acse.fireframe.PDESystem import *
 from acse.fireframe.PDESubsystem import *
 from acse.fireframe.pdeforms import navier_stokes
