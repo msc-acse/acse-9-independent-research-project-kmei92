@@ -1,5 +1,3 @@
-import sys
-sys.path.append("..")
 from PDESubsystem import *
 
 class navier_stokes(PDESubsystem):
