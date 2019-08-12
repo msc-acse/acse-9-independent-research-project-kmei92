@@ -16,6 +16,4 @@ def test_load_parameters():
 
     solver_parameters = recursive_update(solver_parameters, dict)
 
-    assert(bool(solver_parameters) is True)
-
-
+    assert(False is True)
