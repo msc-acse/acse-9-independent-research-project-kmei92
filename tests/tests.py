@@ -1,3 +1,4 @@
+import pytest
 import sys
 sys.path.append("..")
 from PDESystem import *
@@ -20,3 +21,6 @@ def test_load_parameters():
     solver_parameters = recursive_update(default_solver_parameters, diction)
 
     assert(False is True)
+
+if __name__ == '__main__':
+    pytest.main()
