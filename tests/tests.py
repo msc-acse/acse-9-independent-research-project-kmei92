@@ -1,9 +1,7 @@
 import pytest
-import sys
-sys.path.append("..")
-from PDESystem import *
-from PDESubsystem import *
-from demo.pdeforms import navier_stokes
+from acse.fireframe.PDESystem import *
+from acse.fireframe.PDESubsystem import *
+from acse.fireframe.pdeforms import navier_stokes
 import firedrake as fd
 
 def test_load_parameters():
