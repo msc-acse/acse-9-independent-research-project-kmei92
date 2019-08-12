@@ -21,13 +21,6 @@ addons:
 os:
   - linux
 
-env:
-  global:
-    - CC=mpicc
-    # HACK: travis runs 12.04 for which the CMAKE version is too old to
-    # build Eigen, let PETSc build it instead. Fixed now.
-    # - PETSC_CONFIGURE_OPTIONS="--download-eigen=0"
-
 before_install:
   - pip install -U pip
   - pip install -U virtualenv
