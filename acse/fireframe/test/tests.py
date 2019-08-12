@@ -1,19 +1,22 @@
 import sys
 sys.path.append("..")
-import PDESystem, PDESubsystem
+from PDESystem import *
+from PDESubsystem import *
+from demo.pdeforms import navier_stokes
+import firedrake as fd
 
 def test_load_parameters():
 
-    dict = {
+    diction = {
 	'space': {'u': fd.VectorFunctionSpace},
 	'degree': {'u': 2},
-	'linear_solver': {'u': 'gmres', 'p' :'gmres'},
+	'ksp_type': {'u': 'gmres', 'p' :'gmres'},
 	'subsystem_class' : {'up' : navier_stokes},
 	'precond': {'u': 'sor', 'p': 'sor'},
 	'dt' : 0.01,
 	'T' : 10
 	}
 
-    solver_parameters = recursive_update(solver_parameters, dict)
+    solver_parameters = recursive_update(default_solver_parameters, diction)
 
     assert(False is True)
