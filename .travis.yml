@@ -34,6 +34,6 @@ before_install:
 
 install:
   - curl -O https://raw.githubusercontent.com/firedrakeproject/firedrake/master/scripts/firedrake-install
-  - travis_wait 30  python3 ./firedrake-install --disable-ssh --minimal-petsc 
+  - python3 ./firedrake-install --disable-ssh 
   - . ./firedrake/bin/activate
   - pip install -r requirements.txt
