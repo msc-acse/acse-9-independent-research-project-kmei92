@@ -37,7 +37,7 @@ def test_load_mesh():
 	assert(mesh2 is not None)
 
 	for i in range(1, 11):
-		mesh = fd.Mesh("../acse/meshes/step%d.msh" % i)
+		mesh = fd.Mesh("acse/meshes/step%d.msh" % i)
 		assert(mesh is not None)
 
 def test_flow_demo():
