@@ -30,9 +30,9 @@ def test_parameters():
 def test_load_mesh():
 
 	# flow_past_cylinder
-	mesh1 = fd.Mesh("../acse/meshes/flow_past_cylinder.msh")
+	mesh1 = fd.Mesh("acse/meshes/flow_past_cylinder.msh")
 	# high resolution cylinder
-	mesh2 = fd.Mesh("../acse/meshes/cylinder.msh")
+	mesh2 = fd.Mesh("acse/meshes/cylinder.msh")
 	assert(mesh1 is not None)
 	assert(mesh2 is not None)
 
@@ -76,7 +76,7 @@ def test_flow_demo():
 	}
 	)
 
-	mesh = fd.Mesh("../acse/meshes/flow_past_cylinder.msh")
+	mesh = fd.Mesh("acse/meshes/flow_past_cylinder.msh")
 	solver = pde_solver([['u', 'p']], mesh, solver_parameters)
 	solver.setup_constants()
 	solver.define(['u', 'p', 'u'], 'up')
@@ -123,7 +123,7 @@ def test_channel_demo():
 	 'T' : 1.0 }
 	)
 
-	mesh = fd.Mesh("../acse/meshes/cylinder.msh")
+	mesh = fd.Mesh("acse/meshes/cylinder.msh")
 	solver = pde_solver([['u', 'p']], mesh, solver_parameters)
 
 	solver_parameters = recursive_update(solver_parameters,
@@ -189,7 +189,7 @@ def test_radio_transport():
 	)
 
 	#define mesh
-	mesh = fd.Mesh("../acse/meshes/step3.msh")
+	mesh = fd.Mesh("acse/meshes/step3.msh")
 
 	# add subsystems
 	solver = pde_solver([['u', 'p']], mesh, solver_parameters)
