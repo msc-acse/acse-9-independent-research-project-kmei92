@@ -223,6 +223,32 @@ class PDESystem:
 
 		self.forms, self.a, self.L = forms, a, L
 
+		linear_solve = []
+		nonlinear_solve = []
+
+		for i, var in enumerate(self.var_seq):
+			if self.prm['order'][var] > 1: # if mixedfunctionspace
+				linear_solve.append("fd.solve(self.a[%d] == self.L[%d], self.form_args[%r], bcs=boundaries[%d])" % (i, i, var+'_', i))
+				nonlinear_solve.append("fd.solve(self.forms[%d] == 0, self.form_args[%r], bcs=boundaries[%d])" % (i, var+'_', i))
+			elif var in self.prm['ksp_type'] and var not in self.prm['precond']:
+				linear_solve.append("fd.solve(self.a[%d] == self.L[%d], self.form_args[%r], bcs=boundaries[%d], solver_parameters={'ksp_type': self.prm['ksp_type'][%r]})" % (i, i, var+'_', i, var))
+				nonlinear_solve.append("fd.solve(self.forms[%d] == 0, self.form_args[%r], bcs=boundaries[%d], solver_parameters={'ksp_type': self.prm['ksp_type'][%r]})" % (i, var+'_', i, var))
+			elif var not in self.prm['ksp_type'] and var in self.prm['precond']:
+				linear_solve.append("fd.solve(self.a[%d] == self.L[%d], self.form_args[%r], bcs=boundaries[%d], solver_parameters={'pc_type': self.prm['precond'][%r]})" % (i, i, var+'_', i, var))
+				nonlinear_solve.append("fd.solve(self.forms[%d] == 0, self.form_args[%r], bcs=boundaries[%d], solver_parameters={'pc_type': self.prm['precond'][%r]})" % (i, var+'_', i, var))
+			else:
+				linear_solve.append("fd.solve(self.forms[%d] == 0, self.form_args[%r], bcs=boundaries[%d], solver_parameters={'ksp_type': self.prm['ksp_type'][%r], 'pc_type': self.prm['precond'][%r]})" %(i, var+'_', i, var, var))
+				nonlinear_solve.append("fd.solve(self.a[%d] == self.L[%d], self.form_args[%r], bcs=boundaries[%d], solver_parameters={'ksp_type': self.prm['ksp_type'][%r], 'pc_type': self.prm['precond'][%r]})" %(i, i, var+'_', i, var, var))
+
+
+		# print(linear_solve)
+		# print(nonlinear_solve)
+		self.linear_solve = linear_solve
+		self.nonlinear_solve = nonlinear_solve
+
+		# print(self.linear_solve)
+		# print(self.nonlinear_solve)
+
 	def solve(self, time_update=False):
 		"""
 		This function was adapted from Mikael Mortensen on July, 2019.
@@ -267,25 +293,27 @@ class PDESystem:
 				# solve current timestep variables
 				abacus = dict.fromkeys(set(self.var_seq), 0)
 				for i, var in enumerate(self.var_seq):
-
+					# print(i)
 					try:
-						if self.prm['order'][var] > 1: # if mixedfunctionspace
-							fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i])
-						elif var in self.prm['ksp_type'] and var not in self.prm['precond']:
-							fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var]})
-						elif var not in self.prm['ksp_type'] and var in self.prm['precond']:
-							fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'pc_type': self.prm['precond'][var]})
-						else:
-							fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var], 'pc_type': self.prm['precond'][var]})
+						eval(self.linear_solve[i])
+						# if self.prm['order'][var] > 1: # if mixedfunctionspace
+						# 	fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i])
+						# elif var in self.prm['ksp_type'] and var not in self.prm['precond']:
+						# 	fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var]})
+						# elif var not in self.prm['ksp_type'] and var in self.prm['precond']:
+						# 	fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'pc_type': self.prm['precond'][var]})
+						# else:
+						# 	fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var], 'pc_type': self.prm['precond'][var]})
 					except:
-						if self.prm['order'][var] > 1: # if mixedfunctionspace
-							fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i])
-						elif var in self.prm['ksp_type'] and var not in self.prm['precond']:
-							fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var]})
-						elif var not in self.prm['ksp_type'] and var in self.prm['precond']:
-							fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'pc_type': self.prm['precond'][var]})
-						else:
-							fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var], 'pc_type': self.prm['precond'][var]})
+						eval(self.nonlinear_solve[i])
+						# if self.prm['order'][var] > 1: # if mixedfunctionspace
+						# 	fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i])
+						# elif var in self.prm['ksp_type'] and var not in self.prm['precond']:
+						# 	fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var]})
+						# elif var not in self.prm['ksp_type'] and var in self.prm['precond']:
+						# 	fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'pc_type': self.prm['precond'][var]})
+						# else:
+						# 	fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var], 'pc_type': self.prm['precond'][var]})
 
 					# check if boundary conditions need to be updated
 					if self.bc[var][abacus[var]][-1] == 'update':
@@ -309,24 +337,27 @@ class PDESystem:
 			while tstart < tend:
 				# solve current timestep
 				for i, var in enumerate(self.var_seq):
+					# print(var)
 					try:
-						if self.prm['order'][var] > 1: # if mixedfunctionspace
-							fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i])
-						elif var in self.prm['ksp_type'] and var not in self.prm['precond']:
-							fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var]})
-						elif var not in self.prm['ksp_type'] and var in self.prm['precond']:
-							fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'pc_type': self.prm['precond'][var]})
-						else:
-							fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var], 'pc_type': self.prm['precond'][var]})
+						# if self.prm['order'][var] > 1: # if mixedfunctionspace
+						# 	fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i])
+						# elif var in self.prm['ksp_type'] and var not in self.prm['precond']:
+						# 	fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var]})
+						# elif var not in self.prm['ksp_type'] and var in self.prm['precond']:
+						# 	fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'pc_type': self.prm['precond'][var]})
+						# else:
+						# 	fd.solve(self.forms[i] == 0, self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var], 'pc_type': self.prm['precond'][var]})
+						eval(self.linear_solve[i])
 					except:
-						if self.prm['order'][var] > 1: # if mixedfunctionspace
-							fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i])
-						elif var in self.prm['ksp_type'] and var not in self.prm['precond']:
-							fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var]})
-						elif var not in self.prm['ksp_type'] and var in self.prm['precond']:
-							fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'pc_type': self.prm['precond'][var]})
-						else:
-							fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var], 'pc_type': self.prm['precond'][var]})
+						eval(self.nonlinear_solve[i])
+						# if self.prm['order'][var] > 1: # if mixedfunctionspace
+						# 	fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i])
+						# elif var in self.prm['ksp_type'] and var not in self.prm['precond']:
+						# 	fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var]})
+						# elif var not in self.prm['ksp_type'] and var in self.prm['precond']:
+						# 	fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'pc_type': self.prm['precond'][var]})
+						# else:
+						# 	fd.solve(self.a[i] == self.L[i], self.form_args[var+'_'], bcs=boundaries[i], solver_parameters={'ksp_type': self.prm['linear_solver'][var], 'pc_type': self.prm['precond'][var]})
 
 				# assign next timestep variables
 				for var in self.var_seq:

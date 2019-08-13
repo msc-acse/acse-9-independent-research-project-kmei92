@@ -1,7 +1,7 @@
 // far field resolution
-dx1 = 0.05;
+dx1 = 0.045;
 // resolution at cylinder
-dx2 = 0.0025;
+dx2 = 0.001;
 
 // 4 corners of rectangle
 Point(1) = {0, 0, 0, dx1};
@@ -28,7 +28,7 @@ Plane Surface(9) = {9};
 
 //top(1) and bottom(3)
 Physical Line(1) = {1, 3};
-// inflow  
+// inflow
 Physical Line(2) = {4};
 //outflow
 Physical Line(3) = {2};

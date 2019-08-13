@@ -3,69 +3,49 @@ sys.path.append("..")
 from channel_ns_demo import navier_stokes
 from PDESystem import *
 from PDESubsystem import *
+from pdeforms import *
 
 class pde_solver(PDESystem):
-	def __init__(self, comp, mesh, parameters):
-		PDESystem.__init__(self, comp, mesh, parameters)
+    def __init__(self, comp, mesh, parameters):
+        PDESystem.__init__(self, comp, mesh, parameters)
 
-	def setup_bcs(self):
-		x, y = fd.SpatialCoordinate(self.mesh)
+    def setup_bcs(self):
+        x, y = fd.SpatialCoordinate(self.mesh)
 
-		bcu = [fd.DirichletBC(self.V['u'], fd.Constant((0,0)), (1, 4)), # top-bottom and cylinder
-		  fd.DirichletBC(self.V['u'], ((4.0*1.5*y*(0.41 - y) / 0.41**2) ,0), 2)] # inflow
-		bcp = [fd.DirichletBC(self.V['p'], fd.Constant(0), 3)]  # outflow
+        bcu = [fd.DirichletBC(self.V['u'], fd.Constant((0,0)), (1, 4)), # top-bottom and cylinder
+            fd.DirichletBC(self.V['u'], ((4.0*1.5*y*(0.41 - y) / 0.41**2) ,0), 2)] # inflow
+        bcp = [fd.DirichletBC(self.V['p'], fd.Constant(0), 3)]  # outflow
 
-		self.bc['up'] = [bcu, bcp, None]
-		self.bc['c'] = [None]
+        self.bc['u'][0] = [bcu, None, None, None,'fixed']
+        self.bc['p'] = [[bcp, None, None, None, 'fixed']]
 
-	def define(self, var_seq, name):
-        self.pdesubsystems[name] = self.subsystem[name](vars(self), var_seq, name, self.constants,
-                                                        self.bc[name])
-
-class reactions(PDESubsystem):
-
-	def form1(self, c_1, c_n1, c_tst1, c_2, c_n2, c_tst2, c_3, c_n3, c_tst3, u_, **kwargs):
-		eps = fd.Constant(0.01)
-		K = fd.Constant(10.0)
-		k = fd.Constant(self.prm['dt'])
-
-		x, y = fd.SpatialCoordinate(self.mesh)
-		f_1 = fd.conditional(pow(x-0.1, 2)+pow(y-0.1,2)<0.05*0.05, 0.1, 0)
-		f_2 = fd.conditional(pow(x-0.1, 2)+pow(y-0.3,2)<0.05*0.05, 0.1, 0)
-		f_3 = fd.Constant(0.0)
-
-		Form = ((c_1 - c_n1) / k)*c_tst1*fd.dx \
-		+ ((c_2 - c_n2) / k)*c_tst2*fd.dx \
-		+ ((c_3 - c_n3) / k)*c_tst3*fd.dx \
-		+ fd.inner(fd.dot(u_, fd.nabla_grad(c_1)), c_tst1)*fd.dx \
-		+ fd.inner(fd.dot(u_, fd.nabla_grad(c_2)), c_tst2)*fd.dx \
-		+ fd.inner(fd.dot(u_, fd.nabla_grad(c_3)), c_tst3)*fd.dx \
-		+ eps*fd.dot(fd.grad(c_1), fd.grad(c_tst1))*fd.dx \
-		+ eps*fd.dot(fd.grad(c_2), fd.grad(c_tst2))*fd.dx \
-		+ eps*fd.dot(fd.grad(c_3), fd.grad(c_tst3))*fd.dx \
-		+ K*c_1*c_2*c_tst1*fd.dx  \
-		+ K*c_1*c_2*c_tst2*fd.dx  \
-		- K*c_1*c_2*c_tst3*fd.dx \
-		+ K*c_3*c_tst3*fd.dx \
-		- f_1*c_tst1*fd.dx \
-		- f_2*c_tst2*fd.dx \
-		- f_3*c_tst3*fd.dx
-
-		return Form
+    def setup_constants(self):
+        x, y = fd.SpatialCoordinate(self.mesh)
+        self.constants = {
+            'k' : fd.Constant(self.prm['dt']),
+            'n' : fd.FacetNormal(self.mesh),
+            'f' : fd.Constant((0.0, 0.0)),
+            'nu' : fd.Constant(0.001),
+            'eps' : fd.Constant(0.01),
+            'K' : fd.Constant(10.0),
+            'f_1' : fd.conditional(pow(x-0.1, 2)+pow(y-0.1,2)<0.05*0.05, 0.1, 0),
+            'f_2' : fd.conditional(pow(x-0.1, 2)+pow(y-0.3,2)<0.05*0.05, 0.1, 0),
+            'f_3' : fd.Constant(0.0)
+        }
 
 if __name__ == '__main__':
-	solver_parameters  = copy.deepcopy(default_solver_parameters)
-
 	solver_parameters = recursive_update(solver_parameters,
 	{
 	'space': {'u': fd.VectorFunctionSpace},
 	'degree': {'u': 2},
-	'linear_solver': {'up': 'gmres'},
+	'ksp_type': {'u': 'gmres', 'p': 'gmres'},
 	'subsystem_class' : {'up' : navier_stokes},
-	'precond': {'up': 'sor'}}
+	'precond': {'u': 'sor', 'p' : 'sor'},
+	'dt' : 0.0005,
+	 'T' : 1.0 }
 	)
 
-	mesh = fd.Mesh("../../../meshes/cylinder.msh")
+	mesh = fd.Mesh("../../meshes/cylinder.msh")
 	solver = pde_solver([['u', 'p']], mesh, solver_parameters)
 
 	solver_parameters = recursive_update(solver_parameters,
@@ -79,10 +59,14 @@ if __name__ == '__main__':
 	})
 
 	solver.add_subsystem('c', solver_parameters)
+	solver.setup_constants()
+	solver.define(['u', 'p', 'u'], 'up')
+	solver.define(['c'], 'c')
 	solver.setup_bcs()
-	solver.define('up', ['u', 'p', 'u'], solver.bc['up'], 3)
-	solver.define('c', ['c'], solver.bc['c'], 1)
+	start = time.clock()
 	solver.solve()
+	end = time.clock()
+	print('total time: ', end-start)
 
 	#fig1 = plt.figure(figsize=(12, 4))
 	#ax1 = fig1.add_subplot(111)
