@@ -1,3 +1,9 @@
+"""
+author : Keer Mei
+email: keer.mei18@imperial.ac.uk
+github username: kmei92
+"""
+
 from acse.fireframe.PDESubsystem import *
 
 class navier_stokes(PDESubsystem):
@@ -34,24 +40,9 @@ class navier_stokes(PDESubsystem):
 
 		return Form
 
-# class navier_stokes_coupled(PDESubsystem):
-#
-# 	def form1(self, up_trl1, up_trl2, up_tst1, up_tst2, up_1, up_n1, up_2, up_n2, f, nu, k, **kwargs):
-#
-# 		Form = fd.inner((up_trl1 - up_n1) / k), up_tst1) * fd.dx \
-# 		+ nu*fd.inner((fd.grad(up_trl1) + fd.grad(up_trl1).T), fd.grad(up_tst1)) * fd.dx \
-# 		- up_trl2*fd.div(up_tst1)*fd.dx -fd.div(up_trl1)*up_tst2*fd.dx \
-# 		-fd.inner(f, up_tst1)*fd.dx
-#
-# 		return form
-
 class reactions(PDESubsystem):
 
 	def form1(self, c_1, c_n1, c_tst1, c_2, c_n2, c_tst2, c_3, c_n3, c_tst3, u_, eps, K, k, f_1, f_2, f_3, **kwargs):
-		# x, y = fd.SpatialCoordinate(self.mesh)
-		# f_1 = fd.conditional(pow(x-0.1, 2)+pow(y-0.1,2)<0.05*0.05, 0.1, 0)
-		# f_2 = fd.conditional(pow(x-0.1, 2)+pow(y-0.3,2)<0.05*0.05, 0.1, 0)
-		# f_3 = fd.Constant(0.0)
 
 		Form = ((c_1 - c_n1) / k)*c_tst1*fd.dx \
 		+ ((c_2 - c_n2) / k)*c_tst2*fd.dx \

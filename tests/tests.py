@@ -1,3 +1,9 @@
+"""
+author : Keer Mei
+email: keer.mei18@imperial.ac.uk
+github username: kmei92
+"""
+
 import sys
 sys.path.append("..")
 from acse.fireframe.PDESystem import *
