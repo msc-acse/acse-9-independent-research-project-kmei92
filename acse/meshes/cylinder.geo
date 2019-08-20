@@ -1,7 +1,7 @@
 // far field resolution
-dx1 = 0.045;
+dx1 = 0.05;
 // resolution at cylinder
-dx2 = 0.001;
+dx2 = 0.00025;
 
 // 4 corners of rectangle
 Point(1) = {0, 0, 0, dx1};
