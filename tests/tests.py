@@ -8,7 +8,7 @@ import sys
 sys.path.append("..")
 from acse.fireframe.PDESystem import *
 from acse.fireframe.PDESubsystem import *
-from acse.fireframe.pdeforms import *
+from acse.fireframe.demo.pdeforms import *
 import firedrake as fd
 
 
@@ -16,7 +16,7 @@ import firedrake as fd
 def test_parameters():
 	solver_parameters  = copy.deepcopy(default_solver_parameters)
 
-	params = ['space', 'degree', 'ksp_type', 'subsystem_class', 'precond', 'dt', 'T']
+	params = ['space', 'degree', 'family',  'ksp_type', 'precond', 'dt', 'T']
 
 	diction = {
 	'space': {'u': fd.VectorFunctionSpace},
@@ -261,10 +261,10 @@ def test_dx():
 	'ksp_type': {'u': 'gmres', 'p': 'gmres',  'c': 'gmres', 'd':'gmres'},
 	'precond': {'u': 'sor', 'p' : 'sor', 'c': 'sor', 'd':'gmres'},
 	'dt' : 0.001,
-	'T' : 2.0})
+	'T' : 0.1})
 
 	#load mesh
-	mesh = fd.Mesh("../../meshes/step1.msh")
+	mesh = fd.Mesh("acse/meshes/step1.msh")
 
 	# add subsystems for navier stokes and radio_transport
 	solver = pde_solver([['u', 'p']], mesh, solver_parameters)
@@ -280,11 +280,47 @@ def test_dx():
 
 	x, y, t = sy.symbols(('x', 'y', 't'))
 	expr = sy.exp(x*y*t)
-	meshes = [fd.Mesh("../../meshes/step%d.msh" % i) for i in range(1, 2)]
+	meshes = [fd.Mesh("acse/meshes/step%d.msh" % i) for i in range(1, 2)]
 	solver.test_mms('c', expr, spatial=True, f_dict={"exp":fd.exp}, meshes=meshes, plot=False, index=0)
 
 def test_dt():
 	solver_parameters  = copy.deepcopy(default_solver_parameters)
+	class pde_solver(PDESystem):
+		def __init__(self, comp, mesh, parameters):
+			PDESystem.__init__(self, comp, mesh, parameters)
+
+		def setup_bcs(self):
+			x, y = fd.SpatialCoordinate(self.mesh)
+			c0 = fd.exp(x*y*self.t)
+
+			bcu = [fd.DirichletBC(self.V['u'], fd.Constant((0,0)), (10, 12)), # top-bottom and cylinder
+			  fd.DirichletBC(self.V['u'], ((1.0*(y - 1)*(2 - y))/(0.5**2) ,0), 9)] # inflow
+			bcp = [fd.DirichletBC(self.V['p'], fd.Constant(0), 11)]  # outflow
+			bcc1 = [fd.DirichletBC(self.V['c'].sub(0), c0, 'on_boundary')]
+
+			self.bc['u'][0] = [bcu, None, None, None,'fixed']
+			self.bc['p'] = [[bcp, None, None, None, 'fixed']]
+			self.bc['c'][0] = [bcc1, c0, 'on_boundary', 0, 'update']
+
+		def setup_constants(self):
+			x, y = fd.SpatialCoordinate(self.mesh)
+
+			self.constants = {
+				'deltat' : fd.Constant(self.prm['dt']),
+				'Kd' : fd.Constant(0.01),
+				'k1' : fd.Constant(0.005),
+				'k2' : fd.Constant(0.00005),
+				'lamd1' : fd.Constant(0.000005),
+				'lamd2' : fd.Constant(0.0),
+				'rho_s' : fd.Constant(1.),
+				'L' :  fd.Constant(1.),
+				'phi' : fd.Constant(0.3),
+				'n' : fd.FacetNormal(self.mesh),
+				'f' : fd.Constant((0.0, 0.0)),
+				'nu' : fd.Constant(0.001),
+				'frac' : fd.Constant(1.),
+			}
+
 	solver_parameters = recursive_update(solver_parameters,
 	{
 	'space': {'u': fd.VectorFunctionSpace, 'c': fd.MixedFunctionSpace, 'd' : fd.MixedFunctionSpace},
@@ -296,8 +332,8 @@ def test_dt():
 	'T' : 0.1})
 
 	#load mesh
-	mesh = fd.Mesh("../../meshes/step1.msh")
-	deltat = [0.01 / (2**i) for i in range(2)]
+	mesh = fd.Mesh("acse/meshes/step1.msh")
+	deltat = [0.01 / (2**i) for i in range(1)]
 
 	# add subsystems for navier stokes and radio_transport
 	solver = pde_solver([['u', 'p']], mesh, solver_parameters)
