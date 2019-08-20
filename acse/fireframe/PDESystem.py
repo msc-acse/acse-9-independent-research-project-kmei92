@@ -493,7 +493,6 @@ class PDESystem:
 				# repeated variables and boundary conditions
 				abacus = dict.fromkeys(set(self.var_seq), 0)
 				for i, var in enumerate(self.var_seq):
-					print(var)
 					# first try the linear solve methods
 					try:
 						eval(self.linear_solve[i])

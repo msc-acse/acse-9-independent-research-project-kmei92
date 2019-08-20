@@ -234,7 +234,7 @@ class temp_poisson(PDESubsystem):
 	def form1(self, T_, T_tst, T_n, deltat, source, **kwargs):
 		Form = T_*T_tst*fd.dx \
 		+ deltat*fd.dot(fd.nabla_grad(T_), fd.nabla_grad(T_tst))*fd.dx \
-		- (T_n + k * source)*T_tst*fd.dx
+		- (T_n + deltat * source)*T_tst*fd.dx
 
 		return Form
 
