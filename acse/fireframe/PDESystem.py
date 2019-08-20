@@ -23,7 +23,6 @@ default_solver_parameters = {
 	'precond': defaultdict(lambda: ''), # specifies matrix preconditioners
 	'order' : defaultdict(lambda: 1), # default order of function spaces
 	'space' : defaultdict(lambda: fd.FunctionSpace), # default functionspace
-	'subsystem_class': defaultdict(lambda: None), # Users MUST SPECIFY what class object (ex. navier stokes, reactions) to use for each subsystem
 	'T': 10., # End time for simulation,
 	'dt': 0.001  # timestep,
 }
@@ -88,7 +87,6 @@ class PDESystem:
 		self.names = []                                	#ex. ['u', 'p', 'c']
 		self.mesh = mesh								#fd.Mesh object
 		self.prm = parameters							#solver or default_solver_parameters
-		self.subsystem = self.prm['subsystem_class']
 		self.constants = {}
 
 		self.tstart = 0                                 # start time
@@ -433,8 +431,8 @@ class PDESystem:
 				nonlinear_solve.append("fd.solve(self.forms[%d] == 0, self.form_args[%r], bcs=boundaries[%d], solver_parameters={'pc_type': self.prm['precond'][%r]})" % (i, var+'_', i, var))
 			# if both are specified
 			else:
-				linear_solve.append("fd.solve(self.forms[%d] == 0, self.form_args[%r], bcs=boundaries[%d], solver_parameters={'ksp_type': self.prm['ksp_type'][%r], 'pc_type': self.prm['precond'][%r]})" %(i, var+'_', i, var, var))
-				nonlinear_solve.append("fd.solve(self.a[%d] == self.L[%d], self.form_args[%r], bcs=boundaries[%d], solver_parameters={'ksp_type': self.prm['ksp_type'][%r], 'pc_type': self.prm['precond'][%r]})" %(i, i, var+'_', i, var, var))
+				linear_solve.append("fd.solve(self.a[%d] == self.L[%d], self.form_args[%r], bcs=boundaries[%d], solver_parameters={'ksp_type': self.prm['ksp_type'][%r], 'pc_type': self.prm['precond'][%r]})" %(i, i, var+'_', i, var, var))
+				nonlinear_solve.append("fd.solve(self.forms[%d] == 0, self.form_args[%r], bcs=boundaries[%d], solver_parameters={'ksp_type': self.prm['ksp_type'][%r], 'pc_type': self.prm['precond'][%r]})" %(i, var+'_', i, var, var))
 
 		self.linear_solve = linear_solve
 		self.nonlinear_solve = nonlinear_solve
@@ -483,7 +481,6 @@ class PDESystem:
 			for j in range(1, self.prm['order'][var]):
 				boundaries[i].extend(self.bc[var][abacus[var]][0])
 				abacus[var] += 1
-
 		tstart = self.tstart
 		tend = self.tend
 		dt = self.dt
@@ -496,6 +493,7 @@ class PDESystem:
 				# repeated variables and boundary conditions
 				abacus = dict.fromkeys(set(self.var_seq), 0)
 				for i, var in enumerate(self.var_seq):
+					print(var)
 					# first try the linear solve methods
 					try:
 						eval(self.linear_solve[i])
@@ -510,9 +508,14 @@ class PDESystem:
 							boundaries[i][abacus[var]] = fd.DirichletBC(self.V[var].sub(self.bc[var][abacus[var]][3]), self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])
 							abacus[var] += 1
 						# update the boundary condition
+						elif len(self.bc[var]) == 1:
+							boundaries[i] = fd.DirichletBC(self.V[var], self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])
+							abacus[var] += 1
 						else:
 							boundaries[i][abacus[var]] = fd.DirichletBC(self.V[var], self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])
 							abacus[var] += 1
+					abacus[var] += 1
+				for var in self.var_seq:
 					# assign next timestep variables
 					self.form_args[var+'_n'].assign(self.form_args[var+'_'])
 					# write current timestep variables
@@ -539,7 +542,8 @@ class PDESystem:
 					except:
 						eval(self.nonlinear_solve[i])
 					abacus[var] += 1
-					# assign next timestep variables
+				# assign next timestep variables
+				for var in self.var_seq:
 					self.form_args[var+'_n'].assign(self.form_args[var+'_'])
 					# write current timestep variables
 					if var in save_vars:
@@ -638,7 +642,7 @@ class PDESystem:
 		"""
 		self.constants.update(dictionary)
 
-	def define(self, var_seq, name):
+	def define(self, var_seq, name, subsystem):
 		"""
 		This function specifies PDESubsystem objects for each individual subsystem
 		inside the overall PDESystem. This function must be called before setting
@@ -676,7 +680,7 @@ class PDESystem:
 		# be applied to. ex. 0 for the first index of a MixedFunctionSpace
 		self.bc.update(dict((name, [[[], None, None, None, None]] * self.prm['order'][name] * self.var_seq.count(name)) for name in self.var_seq))
 		# initialize the subsystem dictionary with PDESubsystem objects
-		self.pdesubsystems[name] = self.subsystem[name](vars(self), var_seq)
+		self.pdesubsystems[name] = subsystem(vars(self), var_seq)
 
 	def test_mms(self, var, c_exact, spatial=False, temporal=False, f_dict = {}, dt_list=[], meshes=[], plot=False, index=None):
 		"""
@@ -908,9 +912,9 @@ def plot_error(x, y, var):
 	# plot error map
 	ax1.loglog(x, y, 'o', label='fd_norm', color='k', markerfacecolor='None')
 
-	ax1.set_xlabel('$\Delta %r$' %var, fontsize=14)
-	ax1.set_ylabel('$RMS error$', fontsize=14)
-	ax1.set_title('Error convergence graph vs. $\Delta %r$' %var, fontsize=14)
+	ax1.set_xlabel('$\Delta %s$' %var, fontsize=14)
+	ax1.set_ylabel('$l_{2}$  norm', fontsize=14)
+	ax1.set_title('Error convergence graph vs. $\Delta %s$' %var, fontsize=14)
 	ax1.legend(loc='best', fontsize=14)
 
 	# line fit

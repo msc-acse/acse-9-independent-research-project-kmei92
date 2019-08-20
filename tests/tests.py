@@ -22,7 +22,6 @@ def test_parameters():
 	'space': {'u': fd.VectorFunctionSpace},
 	'degree': {'u': 2},
 	'ksp_type': {'u': 'gmres', 'p' :'gmres'},
-	'subsystem_class' : {'up' : navier_stokes},
 	'precond': {'u': 'sor', 'p': 'sor'},
 	'dt' : 0.01,
 	'T' : 10
@@ -46,6 +45,10 @@ def test_load_mesh():
 		mesh = fd.Mesh("acse/meshes/step%d.msh" % i)
 		assert(mesh is not None)
 
+	for i in range(1, 6):
+		mesh = fd.Mesh("acse/meshes/cylinder%d.msh" % i)
+		assert(mesh is not None)
+
 def test_flow_demo():
 	solver_parameters  = copy.deepcopy(default_solver_parameters)
 	class pde_solver(PDESystem):
@@ -63,32 +66,32 @@ def test_flow_demo():
 			self.bc['p'] = [[bcp, None, None, None, 'fixed']]
 
 		def setup_constants(self):
-			self.constants = {
-				'k' : fd.Constant(self.prm['dt']),
+			self.constants.update({
+				'deltat' : fd.Constant(self.prm['dt']),
 				'n' : fd.FacetNormal(self.mesh),
 				'f' : fd.Constant((0.0, 0.0)),
 				'nu' : fd.Constant(0.001)
-			}
+			})
 
+	# update the parameters
 	solver_parameters = recursive_update(solver_parameters,
 	{
 	'space': {'u': fd.VectorFunctionSpace},
 	'degree': {'u': 2},
 	'ksp_type': {'u': 'gmres', 'p': 'gmres'},
-	'subsystem_class' : {'up' : navier_stokes},
 	'precond': {'u': 'sor', 'p':'sor'},
-	'dt' : 0.001,
-	'T' :1
+	'dt' : 0.01,
+	'T' :0.5
 	}
 	)
 
 	mesh = fd.Mesh("acse/meshes/flow_past_cylinder.msh")
 	solver = pde_solver([['u', 'p']], mesh, solver_parameters)
 	solver.setup_constants()
-	solver.define(['u', 'p', 'u'], 'up')
+	solver.define(['u', 'p', 'u'], 'up', navier_stokes)
 	solver.setup_bcs()
 
-def test_channel_demo():
+def test_rxn_demo():
 	solver_parameters  = copy.deepcopy(default_solver_parameters)
 	class pde_solver(PDESystem):
 		def __init__(self, comp, mesh, parameters):
@@ -107,7 +110,7 @@ def test_channel_demo():
 		def setup_constants(self):
 			x, y = fd.SpatialCoordinate(self.mesh)
 			self.constants = {
-				'k' : fd.Constant(self.prm['dt']),
+				'deltat' : fd.Constant(self.prm['dt']),
 				'n' : fd.FacetNormal(self.mesh),
 				'f' : fd.Constant((0.0, 0.0)),
 				'nu' : fd.Constant(0.001),
@@ -120,33 +123,40 @@ def test_channel_demo():
 
 	solver_parameters = recursive_update(solver_parameters,
 	{
-	'space': {'u': fd.VectorFunctionSpace},
-	'degree': {'u': 2},
-	'ksp_type': {'u': 'gmres', 'p': 'gmres'},
-	'subsystem_class' : {'up' : navier_stokes},
-	'precond': {'u': 'sor', 'p' : 'sor'},
+	'space': {'u': fd.VectorFunctionSpace, 'c' : fd.MixedFunctionSpace},
+	'degree': {'u': 2 },
+	'order' : {'c' : 3},
+	'ksp_type': {'u': 'gmres', 'p': 'gmres', 'c':'gmres'},
+	'precond': {'u': 'sor', 'p' : 'sor', 'c':'sor'},
 	'dt' : 0.0005,
 	 'T' : 1.0 }
 	)
 
 	mesh = fd.Mesh("acse/meshes/cylinder.msh")
 	solver = pde_solver([['u', 'p']], mesh, solver_parameters)
+	solver.add_subsystem('c', solver_parameters)
+	solver.setup_constants()
+	solver.define(['u', 'p', 'u'], 'up', navier_stokes)
+	solver.define(['c'], 'c', reactions)
+	solver.setup_bcs()
 
 	solver_parameters = recursive_update(solver_parameters,
 	{
-		'space': {'c': fd.MixedFunctionSpace},
-		'degree': {'c': 1},
-		'order' : {'c' : 3},
-		'linear_solver': {'c': 'gmres'},
-		'subsystem_class' : {'c' : reactions},
-		'precond': {'c': 'sor'}
-	})
-
-	solver.add_subsystem('c', solver_parameters)
-	solver.setup_constants()
-	solver.define(['u', 'p', 'u'], 'up')
-	solver.define(['c'], 'c')
-	solver.setup_bcs()
+	'space': {'u': fd.VectorFunctionSpace, 'c1': fd.FunctionSpace, 'c2' :fd.FunctionSpace, 'c3':fd.FunctionSpace},
+	'degree': {'u': 2},
+	'ksp_type': {'u': 'gmres', 'p': 'gmres', 'c1': 'gmres','c2': 'gmres','c3': 'gmres'},
+	'subsystem_class' : {'up' : navier_stokes, 'c1c2c3' : reactions_uncoupled}, #also a new system is declared
+	'precond': {'u': 'sor', 'p' : 'sor', 'c1': 'sor','c2': 'sor','c3': 'sor'},
+	'dt' : 0.0005,
+	 'T' : 1.0 }
+	)
+	# test uncoupled
+	solver2 = pde_solver([['u', 'p']], mesh, solver_parameters)
+	solver2.add_subsystem(['c1', 'c2', 'c3'], solver_parameters)
+	solver2.setup_constants()
+	solver2.define(['u', 'p', 'u'], 'up', navier_stokes)
+	solver2.define(['c1', 'c2', 'c3'], 'c1c2c3', reactions_uncoupled)
+	solver2.setup_bcs()
 
 def test_radio_transport():
 	solver_parameters  = copy.deepcopy(default_solver_parameters)
@@ -157,58 +167,150 @@ def test_radio_transport():
 		def setup_bcs(self):
 			x, y = fd.SpatialCoordinate(self.mesh)
 
-			bcu = [fd.DirichletBC(self.V['u'], fd.Constant((0,0)), (10, 12)), # top-bottom and cylinder
+			bcu = [fd.DirichletBC(self.V['u'], fd.Constant((0,0)), (10, 12)), # top-bottom
 			  fd.DirichletBC(self.V['u'], ((1.0*(y - 1)*(2 - y))/(0.5**2) ,0), 9)] # inflow
 			bcp = [fd.DirichletBC(self.V['p'], fd.Constant(0), 11)]  # outflow
+
 
 			self.bc['u'][0] = [bcu, None, None, None,'fixed']
 			self.bc['p'] = [[bcp, None, None, None, 'fixed']]
 
 		def setup_constants(self):
+			x, y = fd.SpatialCoordinate(self.mesh)
 			self.constants = {
-				'k' : fd.Constant(self.prm['dt']),
+				'deltat' : fd.Constant(self.prm['dt']),
 				'Kd' : fd.Constant(0.01),
-				'k1' : fd.Constant(0.5),
-				'k2' : fd.Constant(0.01),
-				'lamd1' : fd.Constant(1.5),
-				'lamd2' : fd.Constant(0.),
+				'k1' : fd.Constant(0.005),
+				'k2' : fd.Constant(0.00005),
+				'lamd1' : fd.Constant(0.000005),
+				'lamd2' : fd.Constant(0.0),
 				'rho_s' : fd.Constant(1.),
 				'L' :  fd.Constant(1.),
 				'phi' : fd.Constant(0.3),
-				'f' : fd.Constant(1.),
 				'n' : fd.FacetNormal(self.mesh),
 				'f' : fd.Constant((0.0, 0.0)),
 				'nu' : fd.Constant(0.001),
-				'frac' : fd.Constant(1.)
+				'frac' : fd.Constant(1.),
+				'source1' : fd.conditional(pow(x-1, 2)+pow(y-1.5,2)<0.25*0.25, 10.0, 0)
 			}
 
+	# update the parameters
 	solver_parameters = recursive_update(solver_parameters,
 	{
-	'space': {'u': fd.VectorFunctionSpace, 'cs': fd.MixedFunctionSpace, 'cd' : fd.MixedFunctionSpace, 'as' : fd.MixedFunctionSpace},
-	'degree': {'u': 2, 'p': 1, 'cs': 1, 'cd' : 1, 'as' : 1},
-	'order' : {'u': 1, 'p': 1, 'cs' : 2, 'cd' : 2, 'as' : 2, 'cdcsas' : 2},
-	'ksp_type': {'u': 'gmres', 'p': 'gmres', 'cs': 'gmres', 'cd': 'gmres', 'as': 'gmres'},
-	'subsystem_class' : {'up': navier_stokes, 'cdcsas' : radio_transport},
-	'precond': {'u': 'sor', 'p' : 'sor', 'cs': 'sor', 'cd': 'sor', 'as': 'sor'},
-	'T': 1.0
-	}
+	'space': {'u': fd.VectorFunctionSpace, 'c': fd.MixedFunctionSpace, 'd' : fd.MixedFunctionSpace},
+	'degree': {'u': 2},
+	'order' : {'c': 3, 'd':3},
+	'ksp_type': {'u': 'gmres', 'p': 'gmres',  'c': 'gmres', 'd':'gmres'},
+	'precond': {'u': 'sor', 'p' : 'sor', 'c': 'sor', 'd':'gmres'},
+	'dt' : 0.05,
+	'T' : 5.0}
 	)
 
-	#define mesh
-	mesh = fd.Mesh("acse/meshes/step3.msh")
-
-	# add subsystems
+	#load mesh
+	mesh = fd.Mesh("acse/meshes/step10.msh")
 	solver = pde_solver([['u', 'p']], mesh, solver_parameters)
-	solver.add_subsystem(['cd', 'cs', 'as'], solver_parameters)
-
-	#setup system and define subsystems
+	solver.add_subsystem(['c', 'd'], solver_parameters)
 	solver.setup_constants()
-	solver.define(['u', 'p', 'u'], 'up')
-	solver.define(['cd', 'cs', 'as'], 'cdcsas')
+	solver.define(['u', 'p', 'u'], 'up', navier_stokes)
+	solver.define(['c', 'd'], 'cd', radio_transport_coupled)
 	solver.setup_bcs()
 
+def test_dx():
+	solver_parameters  = copy.deepcopy(default_solver_parameters)
+	class pde_solver(PDESystem):
+		def __init__(self, comp, mesh, parameters):
+			PDESystem.__init__(self, comp, mesh, parameters)
 
-	#setup initial condition
-	x, y = fd.SpatialCoordinate(mesh)
-	c = fd.conditional(pow(x-1, 2)+pow(y-1.5,2)<0.05*0.05, 10, 0)
-	solver.setup_initial('cd_n', c, mixedspace=True, index=0)
+		def setup_bcs(self):
+			x, y = fd.SpatialCoordinate(self.mesh)
+			c0 = fd.exp(x*y*self.t)
+
+			bcu = [fd.DirichletBC(self.V['u'], fd.Constant((0,0)), (10, 12)), # top-bottom and cylinder
+			  fd.DirichletBC(self.V['u'], ((1.0*(y - 1)*(2 - y))/(0.5**2) ,0), 9)] # inflow
+			bcp = [fd.DirichletBC(self.V['p'], fd.Constant(0), 11)]  # outflow
+			bcc1 = [fd.DirichletBC(self.V['c'].sub(0), c0, 'on_boundary')]
+
+			self.bc['u'][0] = [bcu, None, None, None,'fixed']
+			self.bc['p'] = [[bcp, None, None, None, 'fixed']]
+			self.bc['c'][0] = [bcc1, c0, 'on_boundary', 0, 'update']
+
+		def setup_constants(self):
+			x, y = fd.SpatialCoordinate(self.mesh)
+
+			self.constants = {
+				'deltat' : fd.Constant(self.prm['dt']),
+				'Kd' : fd.Constant(0.01),
+				'k1' : fd.Constant(0.005),
+				'k2' : fd.Constant(0.00005),
+				'lamd1' : fd.Constant(0.000005),
+				'lamd2' : fd.Constant(0.0),
+				'rho_s' : fd.Constant(1.),
+				'L' :  fd.Constant(1.),
+				'phi' : fd.Constant(0.3),
+				'n' : fd.FacetNormal(self.mesh),
+				'f' : fd.Constant((0.0, 0.0)),
+				'nu' : fd.Constant(0.001),
+				'frac' : fd.Constant(1.),
+			}
+	# update the parameters
+	solver_parameters = recursive_update(solver_parameters,
+	{
+	'space': {'u': fd.VectorFunctionSpace, 'c': fd.MixedFunctionSpace, 'd' : fd.MixedFunctionSpace},
+	'degree': {'u': 2},
+	'order' : {'c': 3, 'd':3},
+	'ksp_type': {'u': 'gmres', 'p': 'gmres',  'c': 'gmres', 'd':'gmres'},
+	'precond': {'u': 'sor', 'p' : 'sor', 'c': 'sor', 'd':'gmres'},
+	'dt' : 0.001,
+	'T' : 2.0})
+
+	#load mesh
+	mesh = fd.Mesh("../../meshes/step1.msh")
+
+	# add subsystems for navier stokes and radio_transport
+	solver = pde_solver([['u', 'p']], mesh, solver_parameters)
+	# solver.add_subsystem(['cd', 'cs', 'as'], solver_parameters)
+	solver.add_subsystem(['c', 'd'], solver_parameters)
+	#setup constants
+	solver.setup_constants()
+	# define subsystems and variable sequence
+	solver.define(['u', 'p', 'u'], 'up', navier_stokes)
+	solver.define(['c', 'd'], 'cd', radio_transport_coupled_mms)
+	# setup boundary conditions
+	solver.setup_bcs()
+
+	x, y, t = sy.symbols(('x', 'y', 't'))
+	expr = sy.exp(x*y*t)
+	meshes = [fd.Mesh("../../meshes/step%d.msh" % i) for i in range(1, 2)]
+	solver.test_mms('c', expr, spatial=True, f_dict={"exp":fd.exp}, meshes=meshes, plot=False, index=0)
+
+def test_dt():
+	solver_parameters  = copy.deepcopy(default_solver_parameters)
+	solver_parameters = recursive_update(solver_parameters,
+	{
+	'space': {'u': fd.VectorFunctionSpace, 'c': fd.MixedFunctionSpace, 'd' : fd.MixedFunctionSpace},
+	'degree': {'u': 2},
+	'order' : {'c': 3, 'd':3},
+	'ksp_type': {'u': 'gmres', 'p': 'gmres',  'c': 'gmres', 'd':'gmres'},
+	'precond': {'u': 'sor', 'p' : 'sor', 'c': 'sor', 'd':'gmres'},
+	'dt' : 0.01,
+	'T' : 0.1})
+
+	#load mesh
+	mesh = fd.Mesh("../../meshes/step1.msh")
+	deltat = [0.01 / (2**i) for i in range(2)]
+
+	# add subsystems for navier stokes and radio_transport
+	solver = pde_solver([['u', 'p']], mesh, solver_parameters)
+	# solver.add_subsystem(['cd', 'cs', 'as'], solver_parameters)
+	solver.add_subsystem(['c', 'd'], solver_parameters)
+	#setup constants
+	solver.setup_constants()
+	# define subsystems and variable sequence
+	solver.define(['u', 'p', 'u'], 'up', navier_stokes)
+	solver.define(['c', 'd'], 'cd', radio_transport_coupled_mms)
+	# setup boundary conditions
+	solver.setup_bcs()
+
+	x, y, t = sy.symbols(('x', 'y', 't'))
+	expr = sy.exp(x*y*t)
+	solver.test_mms('c', expr, temporal=True, f_dict={"exp":fd.exp}, dt_list=deltat, plot=False, index=0)
