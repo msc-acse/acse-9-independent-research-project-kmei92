@@ -8,7 +8,7 @@ import sys
 sys.path.append("..")
 from acse.fireframe.PDESystem import *
 from acse.fireframe.PDESubsystem import *
-from acse.fireframe.demo.pdeforms import *
+from acse.fireframe.pdeforms import *
 import firedrake as fd
 
 
