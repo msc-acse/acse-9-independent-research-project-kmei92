@@ -6,7 +6,7 @@ github username: kmei92
 
 import sys
 sys.path.append("..")
-from fireframe.PDESubsystem import *
+from PDESubsystem import *
 
 class navier_stokes(PDESubsystem):
 
