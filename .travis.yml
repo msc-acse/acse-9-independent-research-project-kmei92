@@ -10,6 +10,6 @@ services:
 
 before_install:
     - docker pull firedrakeproject/firedrake
-
+    - export PYTHONPATH=$(pwd):$PYTHONPATH
 script: 
     - travis_wait 20 docker build .
