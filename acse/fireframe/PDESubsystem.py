@@ -22,9 +22,6 @@ class PDESubsystem:
 	:param var_sequence: a list of the variables to be solved. i.e. ['u', 'p',
 	'u'] for the navier stokes equation
 	:type var_sequence: `list`
-	:param constants: a dictionary of constants to be used in the variational
-	forms.
-	:type parameters: `dictionary`
 	"""
 	def __init__(self, solver_namespace, var_sequence):
 		self.solver_namespace = solver_namespace 	#PDEsystem's vars(self)
