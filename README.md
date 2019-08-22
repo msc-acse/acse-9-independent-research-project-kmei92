@@ -1,7 +1,7 @@
 ### Build Status
 [![Build Status](https://travis-ci.com/msc-acse/acse-9-independent-research-project-kmei92.svg?branch=master)](https://travis-ci.com/msc-acse/acse-9-independent-research-project-kmei92)
 
-![Demonstration of three component chemical reactions solution](imgs/fireframe_rxns.png)
+!(imgs/fireframe_rxns.png=200x50 "Demonstration of three component reaction flow")
 
 ## Introduction
 Fireframe is a programmable framework built on top of the Firedrake finite element library. Firedrake aims to automate the process
