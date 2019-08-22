@@ -1,7 +1,7 @@
 ### Build Status
 [![Build Status](https://travis-ci.com/msc-acse/acse-9-independent-research-project-kmei92.svg?branch=master)](https://travis-ci.com/msc-acse/acse-9-independent-research-project-kmei92)
 
-![](imgs/fireframe_rxns.png =200x50 "Demonstration of three component reaction flow")
+![](imgs/fireframe_rxns.png "Demonstration of three component reaction flow")
 
 ## Introduction
 Fireframe is a programmable framework built on top of the Firedrake finite element library. Firedrake aims to automate the process
@@ -22,9 +22,9 @@ Example problems are presented and solved, including:
 In order to use Fireframe, please first install the latest version of Firedrake [here](https://www.firedrakeproject.org/download.html)
 
 To download Fireframe:
-
+```bash
   git clone https://github.com/msc-acse/acse-9-independent-research-project-kmei92.git
-
+```
 Before attempting to use Fireframe or any Firedrake functions, activate the Firedrake virtualenv first:
 
   source firedrake/bin/activate
