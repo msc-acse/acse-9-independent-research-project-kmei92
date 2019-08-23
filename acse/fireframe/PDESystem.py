@@ -60,11 +60,12 @@ class PDESystem:
 	equations.
 
 	:param system_composition: a list of list. i.e. [['u', 'p']] for navier-stokes
-	Example:
-		[['u', 'p']] a system with two variables, u and p
-		[['up']] a system with one variable, up. Most likely a MixedFunctionSpace
-		[['u'], ['p']] two coupled systems with single variable.
 	:type system_composition: `list` of `list`
+	Example:
+		[['u', 'p']] a system with two variables, u and p.
+		[['up']] a system with one variable, up. Most likely a MixedFunctionSpace.
+		[['u'], ['p']] two coupled systems with single variable.
+
 
 	:param mesh: a firedrake mesh object
 	:type mesh: `fd.Mesh object`
@@ -116,6 +117,7 @@ class PDESystem:
 
 		:returns self.names: a list of variables
 		:rtype: `list`
+
 		:returns self.system_names: a list of system variables
 		:rtype: `list`
 		"""
@@ -130,9 +132,9 @@ class PDESystem:
 		# create function spaces
 		self.setup_function_spaces(self.mesh, self.prm['degree'], self.prm['space'], self.prm['order'], self.prm['family']) # removed cons
 		# create trial and test functions
-		self.setup_trial_test(self.prm['order'])
+		self.setup_trial_test(self.prm['order'], self.prm['space'])
 		# create arguments to be passed into PDESubsystems
-		self.setup_form_args(self.prm['order'])
+		self.setup_form_args(self.prm['order'], self.prm['space'])
 
 	def setup_function_spaces(self, mesh, degree, space, order, family):
 		"""
@@ -146,20 +148,20 @@ class PDESystem:
 
 		:params mesh: A Firedrake mesh object
 		:type mesh: `fd.Mesh object`0
-		:params degree: A dictionary with keys of variable names and values of integers.
-		i.e. {'u' : 1, 'p' : 1}
+
+		:params degree: A dictionary with keys of variable names and values of integers. i.e. {'u' : 1, 'p' : 1}
 		:type degree: `dictionary`
-		:params space: A dictionary with keys of variable names and values of
-		firedrake function space methods. i.e. {'u' : fd.VectorFunctionSpace}
+
+		:params space: A dictionary with keys of variable names and values of firedrake function space methods. i.e. {'u' : fd.VectorFunctionSpace}
 		:type space: `dictionary`
-		:params order: A dictionary with keys of variable names and values of
-		integers. i.e. {'u' : 1, 'p' : 1}
+
+		:params order: A dictionary with keys of variable names and values of integers. i.e. {'u' : 1, 'p' : 1}
 		:type order: `dictionary`
-		:params family: A dictionary with keys of variable names and values of
-		Firedrake finite element familys. i.e. {'u' : 'DG', 'p' : 'CG'}
+
+		:params family: A dictionary with keys of variable names and values of Firedrake finite element familys. i.e. {'u' : 'DG', 'p' : 'CG'}
 		:type family: `dictionary`
-		:returns self.V: A dictionary with keys of variable names and values of Firedrake function space objects.
-		i.e. {'u': fd.VectorFunctionSpace, 'p': fd.FunctionSpace, 'cd' : fd.MixedFunctionSpace}
+
+		:returns self.V: A dictionary with keys of variable names and values of Firedrake function space objects. i.e. {'u': fd.VectorFunctionSpace, 'p': fd.FunctionSpace, 'cd' : fd.MixedFunctionSpace}
 		:rtype self.V: `dictionary`
 		"""
 		# empty dictionary
@@ -173,6 +175,11 @@ class PDESystem:
 				single_space = fd.FunctionSpace(mesh, family[name], degree[name])
 				total_space = [single_space for i in range(order[name])]
 				V.update(dict([(name, space[name](total_space))]))
+			# special scenario for taylor hood elements
+			elif space[name] == 'TH':
+				T = fd.VectorFunctionSpace(mesh, family[name], 1)
+				H = fd.FunctionSpace(mesh, family[name], 2)
+				V.update(dict([(name, T*H)]))
 			# use the parameters['space'] value to determine type of function space
 			else:
 				V.update(dict([(name, space[name](mesh, family[name], degree[name]))]))
@@ -188,21 +195,20 @@ class PDESystem:
 
 		:params mesh: A Firedrake mesh object
 		:type mesh: `fd.Mesh object`
-		:params degree:. A dictionary with keys of variable names and values of integers.
-		i.e. {'u' : 1, 'p' : 1}
+
+		:params degree: A dictionary with keys of variable names and values of integers. i.e. {'u' : 1, 'p' : 1}
 		:type degree: `dictionary`
-		:params space:. A dictionary with keys of variable names and values of
-		firedrake function space methods. i.e. {'u' : fd.VectorFunctionSpace}
+
+		:params space: A dictionary with keys of variable names and values of firedrake function space methods. i.e. {'u' : fd.VectorFunctionSpace}
 		:type space: `dictionary`
-		:params order:. A dictionary with keys of variable names and values of
-		integers. i.e. {'u' : 1, 'p' : 1}
+
+		:params order: A dictionary with keys of variable names and values of integers. i.e. {'u' : 1, 'p' : 1}
 		:type order: `dictionary`
-		:params family:. A dictionary with keys of variable names and values of
-		Firedrake finite element familys. i.e. {'u' : 'DG', 'p' : 'CG'}
+
+		:params family: A dictionary with keys of variable names and values of Firedrake finite element familys. i.e. {'u' : 'DG', 'p' : 'CG'}
 		:type family: `dictionary`
 
-		:returns self.V: A dictionary with keys of variable names and values of Firedrake function space objects.
-		i.e. {'u': fd.VectorFunctionSpace, 'p': fd.FunctionSpace, 'cd' : fd.MixedFunctionSpace}
+		:returns self.V: A dictionary with keys of variable names and values of Firedrake function space objects. i.e. {'u': fd.VectorFunctionSpace, 'p': fd.FunctionSpace, 'cd' : fd.MixedFunctionSpace}
 		:rtype self.V: `dictionary`
 		"""
 		# for each variable in new system
@@ -214,11 +220,17 @@ class PDESystem:
 				single_space = fd.FunctionSpace(mesh, family[name], degree[name])
 				total_space = [single_space for i in range(order[name])]
 				self.V.update(dict([(name, space[name](total_space))]))
+			# special scenario for taylor hood elements
+			elif space[name] == 'TH':
+				T = fd.VectorFunctionSpace(mesh, family[name], 1)
+				H = fd.FunctionSpace(mesh, family[name], 2)
+				self.T, self.H = T, H
+				self.V.update(dict([(name, T*H)]))
 			# use the parameters['space'] value to determine type of function space
 			else:
 				self.V.update(dict([(name, space[name](mesh, family[name], degree[name]))]))
 
-	def setup_trial_test(self, order):
+	def setup_trial_test(self, order, space):
 		"""
 		This function was adapted from Mikael Mortensen on July, 2019.
 		Source code can be found here:
@@ -228,17 +240,13 @@ class PDESystem:
 		This function creates all of the trial and test functions to be used the the in the
 		variational form. It is dependent on the variable names given to the PDESystem
 
-		:params order: A dictionary with keys of variable names and values of
-		integers. i.e. {'c' : 3}
+		:params order: A dictionary with keys of variable names and values of integers. i.e. {'c' : 3}
 		:type order: `dictionary`
 
-		:returns self.qt: A dictionary with keys of variable names + suffix
-		'_trl' and Firedrake TrialFunction or TrialFunctions objects. i.e.
-		{'u_trl', fd.TrialFunction}
+		:returns self.qt: A dictionary with keys of variable names + suffix '_trl' and Firedrake TrialFunction or TrialFunctions objects. i.e. {'u_trl', fd.TrialFunction}
 		:rtype self.qt: `dictionary`
-		:returns self.vt: A dictionary with keys of variable names + suffix
-		'_tst' and Firedrake TestFunction or TestFunctions objects. i.e.
-		{'u_trl', fd.TestFunction}
+
+		:returns self.vt: A dictionary with keys of variable names + suffix '_tst' and Firedrake TestFunction or TestFunctions objects. i.e. {'u_trl', fd.TestFunction}
 		:rtype self.vt: `dictionary`
 		"""
 		V, names = self.V, self.names
@@ -252,6 +260,10 @@ class PDESystem:
 			if order[name] > 1:
 				q.update(dict( (name+'_trl%i'%(num), fd.TrialFunctions(V[name])[num-1]) for num in range(1, order[name]+1)))
 				v.update(dict( (name+'_tst%i'%(num), fd.TestFunctions(V[name])[num-1]) for num in range(1, order[name]+1)))
+			# if Taylor hood elements
+			elif space[name] == 'TH':
+				q.update(dict( (name+'_trl%i'%(num), fd.TrialFunctions(V[name])[num-1]) for num in range(1, 3)))
+				v.update(dict( (name+'_tst%i'%(num), fd.TestFunctions(V[name])[num-1]) for num in range(1, 3)))
 			# create Trial and Test
 			else:
 				q.update(dict( [ (name+'_trl', fd.TrialFunction(V[name])) ] ) )
@@ -259,7 +271,7 @@ class PDESystem:
 		# create new attribute self.qt and self.vt for trial and test functions
 		self.qt, self.vt = q, v
 
-	def update_trial_test(self, name_list, order):
+	def update_trial_test(self, name_list, order, space):
 		"""
 		Description:
 		This function updates self.qt and self.vt when a new subsystem is added.
@@ -267,17 +279,14 @@ class PDESystem:
 
 		:params name_list: A list of variables. i.e. ['cd', 'cs', 'as']
 		:type name_list: `list`
-		:params order: A dictionary with keys of variable names and values of
-		integers. i.e. {'c' : 3}
+
+		:params order: A dictionary with keys of variable names and values of integers. i.e. {'c' : 3}
 		:type order: `dictionary`
 
-		:returns self.qt:. A dictionary with keys of variable names + suffix
-		'_trl' and Firedrake TrialFunction or TrialFunctions objects. i.e.
-		{'u_trl', fd.TrialFunction}
+		:returns self.qt: A dictionary with keys of variable names + suffix '_trl' and Firedrake TrialFunction or TrialFunctions objects. i.e. {'u_trl', fd.TrialFunction}
 		:rtype self.qt: `dictionary`
-		:returns self.vt: A dictionary with keys of variable names + suffix
-		'_tst' and Firedrake TestFunction or TestFunctions objects. i.e.
-		{'u_trl', fd.TestFunction}
+
+		:returns self.vt: A dictionary with keys of variable names + suffix '_tst' and Firedrake TestFunction or TestFunctions objects. i.e. {'u_trl', fd.TestFunction}
 		:rtype self.vt: `dictionary`
 		"""
 
@@ -288,12 +297,16 @@ class PDESystem:
 			if order[name] > 1:
 				self.qt.update(dict( (name+'_trl%i'%(num), fd.TrialFunctions(V[name])[num-1]) for num in range(1, order[name]+1)))
 				self.vt.update(dict( (name+'_tst%i'%(num), fd.TestFunctions(V[name])[num-1]) for num in range(1, order[name]+1)))
+			# if Taylor hood elements
+			elif space[name] == 'TH':
+				self.qt.update(dict( (name+'_trl%i'%(num), fd.TrialFunctions(V[name])[num-1]) for num in range(1, 3)))
+				self.vt.update(dict( (name+'_tst%i'%(num), fd.TestFunctions(V[name])[num-1]) for num in range(1, 3)))
 			# create Trial and Test
 			else:
 				self.qt.update(dict( [ (name+'_trl', fd.TrialFunction(V[name])) ] ) )
 				self.vt.update(dict( [ (name+'_tst', fd.TestFunction(V[name])) ] ) )
 
-	def setup_form_args(self, order):
+	def setup_form_args(self, order, space):
 		"""
 		This function was adapted from Mikael Mortensen on July, 2019.
 		Source code can be found here:
@@ -306,14 +319,10 @@ class PDESystem:
 		TestFunctions into one dictioanry.
 		It is dependent on the variable names given to the PDESystem.
 
-		:params order: A dictionary with keys of variable names and values of
-		integers. i.e. {'c' : 3}
+		:params order: A dictionary with keys of variable names and values of integers. i.e. {'c' : 3}
 		:type order: `dictionary`
 
-		:returns self.form_args: A dictionary with keys of variable names + suffix
-		'_trl' and Firedrake TrialFunction or TrialFunctions objects. i.e.
-		{'u_': fd.Function, 'u_n': fd.Function, 'u_trl':fd.TrialFunction,
-		'u_tst' : fd.TestFunction}
+		:returns self.form_args: A dictionary with keys of variable names + suffix '_trl' and Firedrake TrialFunction or TrialFunctions objects. i.e. {'u_': fd.Function, 'u_n': fd.Function, 'u_trl':fd.TrialFunction, 'u_tst' : fd.TestFunction}
 		:rtype self.form_args: `dictionary`
 		"""
 		V, names = self.V, self.names
@@ -327,6 +336,13 @@ class PDESystem:
 				form_args.update(dict( [ (name + '_n', fd.Function(V[name])) ] ) ) # current
 				form_args.update(dict( (name+'_%i'%(num), form_args[name+'_'][num-1]) for num in range(1, order[name]+1))) # gets individual components
 				form_args.update(dict( (name+'_n%i'%(num), form_args[name+'_n'][num-1]) for num in range(1, order[name]+1))) # gets individual components
+			# if Taylor hood elements
+			elif space[name] == 'TH':
+				# create current iteration '_n' and future iteration '_' functions
+				form_args.update(dict( [ (name + '_', fd.Function(V[name])) ] ) ) # next iteration
+				form_args.update(dict( [ (name + '_n', fd.Function(V[name])) ] ) ) # current
+				form_args.update(dict( (name+'_%i'%(num), form_args[name+'_'].split()[num-1]) for num in range(1, 3))) # gets individual components
+				form_args.update(dict( (name+'_n%i'%(num), form_args[name+'_n'].split()[num-1]) for num in range(1, 3))) # gets individual components
 			# create current iteration '_n' and future iteration '_' functions
 			else:
 				form_args.update(dict( [ (name + '_', fd.Function(V[name])) ] ) ) # next iteration
@@ -338,20 +354,16 @@ class PDESystem:
 		# create new attribute self.form_args to store all function dictionaries
 		self.form_args = form_args
 
-	def update_form_args(self, name_list, order):
+	def update_form_args(self, name_list, order, space):
 		"""
 		Description:
 		This function updates self.form_args dictionary when a new subsystem
 		is added to the PDESystem.
 
-		:params order:. A dictionary with keys of variable names and values of
-		integers. i.e. {'c' : 3}
+		:params order:. A dictionary with keys of variable names and values of integers. i.e. {'c' : 3}
 		:type order: `dictionary`
 
-		:returns self.form_args: A dictionary with keys of variable names + suffix
-		'_trl' and Firedrake TrialFunction or TrialFunctions objects. i.e.
-		{'u_': fd.Function, 'u_n': fd.Function, 'u_trl':fd.TrialFunction,
-		'u_tst' : fd.TestFunction}
+		:returns self.form_args: A dictionary with keys of variable names + suffix '_trl' and Firedrake TrialFunction or TrialFunctions objects. i.e. {'u_': fd.Function, 'u_n': fd.Function, 'u_trl':fd.TrialFunction, 'u_tst' : fd.TestFunction}
 		:rtype self.form_args: `dictionary`
 		"""
 		V = self.V
@@ -364,6 +376,13 @@ class PDESystem:
 				self.form_args.update(dict( [ (name + '_n', fd.Function(V[name])) ] ) ) # current
 				self.form_args.update(dict( (name+'_%i'%(num), self.form_args[name+'_'][num-1]) for num in range(1, order[name]+1))) # gets individual components
 				self.form_args.update(dict( (name+'_n%i'%(num), self.form_args[name+'_n'][num-1]) for num in range(1, order[name]+1))) # gets individual components
+			# if Taylor hood elements
+			elif space[name] == 'TH':
+				# create current iteration '_n' and future iteration '_' functions
+				self.form_args.update(dict( [ (name + '_', fd.Function(V[name])) ] ) ) # next iteration
+				self.form_args.update(dict( [ (name + '_n', fd.Function(V[name])) ] ) ) # current
+				self.form_args.update(dict( (name+'_%i'%(num), form_args[name+'_'].split()[num-1]) for num in range(1, 3))) # gets individual components
+				self.form_args.update(dict( (name+'_n%i'%(num), form_args[name+'_n'].split()[num-1]) for num in range(1, 3))) # gets individual components
 			# create current iteration '_n' and future iteration '_' functions
 			else:
 				self.form_args.update(dict( [ (name + '_', fd.Function(V[name])) ] ) ) # next iteration
@@ -379,20 +398,19 @@ class PDESystem:
 		The solve function should only be called once each subsystem has been
 		defined!
 
-		:returns forms: A list of UFL expressions of the variational forms
-		of the underlying PDEs.
+		:returns forms: A list of UFL expressions of the variational forms of the underlying PDEs.
 		:rtypes forms: `list`
-		:returns a: A list of UFL expressions of the LHS of the variational
-		forms.
+
+		:returns a: A list of UFL expressions of the LHS of the variational forms.
 		:rtypes a: `list`
-		:returns L: A list of UFL expressions of the RHS of the underlying
-		variational forms.
+
+		:returns L: A list of UFL expressions of the RHS of the underlying variational forms.
 		:rtypes L: `list`
-		:returns linear_solve: A list of strings to be called using eval() in
-		the solve function. i.e. fd.solve(a == L)
+
+		:returns linear_solve: A list of strings to be called using eval() in the solve function. i.e. fd.solve(a == L)
 		:rtypes linear_solve: `list`
-		:returns nonlinear_solve: A list of strings to be called using eval()
-		in the solve function. i.e. fd.solve(F==0)
+
+		:returns nonlinear_solve: A list of strings to be called using eval() in the solve function. i.e. fd.solve(F==0)
 		:rtypes nonlinear_solve: `list`
 		"""
 		forms, a, L = [], [], []
@@ -418,19 +436,27 @@ class PDESystem:
 		nonlinear_solve = []
 		# for each variable
 		for i, var in enumerate(self.var_seq):
-			if self.prm['order'][var] > 1: # if mixedfunctionspace
+			if self.prm['order'][var] > 1 or self.prm['space'][var] == 'TH': # if mixedfunctionspace or Vector*Function
+				linear_solve.append("fd.solve(self.a[%d] == self.L[%d], self.form_args[%r], bcs=boundaries[%d])" % (i, i, var+'_', i))
+				nonlinear_solve.append("fd.solve(self.forms[%d] == 0, self.form_args[%r], bcs=boundaries[%d])" % (i, var+'_', i))
+			# if neither are specified
+			elif var not in self.prm['ksp_type'] and var not in self.prm['precond']:
+				# print('yes')
 				linear_solve.append("fd.solve(self.a[%d] == self.L[%d], self.form_args[%r], bcs=boundaries[%d])" % (i, i, var+'_', i))
 				nonlinear_solve.append("fd.solve(self.forms[%d] == 0, self.form_args[%r], bcs=boundaries[%d])" % (i, var+'_', i))
 			# if users have specified a preconditioner but not an iterative method
 			elif var in self.prm['ksp_type'] and var not in self.prm['precond']:
+				# print('yes1')
 				linear_solve.append("fd.solve(self.a[%d] == self.L[%d], self.form_args[%r], bcs=boundaries[%d], solver_parameters={'ksp_type': self.prm['ksp_type'][%r]})" % (i, i, var+'_', i, var))
 				nonlinear_solve.append("fd.solve(self.forms[%d] == 0, self.form_args[%r], bcs=boundaries[%d], solver_parameters={'ksp_type': self.prm['ksp_type'][%r]})" % (i, var+'_', i, var))
 			# if users have specified an iterative method but not a preconditioner
 			elif var not in self.prm['ksp_type'] and var in self.prm['precond']:
+				# print('yes2')
 				linear_solve.append("fd.solve(self.a[%d] == self.L[%d], self.form_args[%r], bcs=boundaries[%d], solver_parameters={'pc_type': self.prm['precond'][%r]})" % (i, i, var+'_', i, var))
 				nonlinear_solve.append("fd.solve(self.forms[%d] == 0, self.form_args[%r], bcs=boundaries[%d], solver_parameters={'pc_type': self.prm['precond'][%r]})" % (i, var+'_', i, var))
 			# if both are specified
 			else:
+				# print('yes3')
 				linear_solve.append("fd.solve(self.a[%d] == self.L[%d], self.form_args[%r], bcs=boundaries[%d], solver_parameters={'ksp_type': self.prm['ksp_type'][%r], 'pc_type': self.prm['precond'][%r]})" %(i, i, var+'_', i, var, var))
 				nonlinear_solve.append("fd.solve(self.forms[%d] == 0, self.form_args[%r], bcs=boundaries[%d], solver_parameters={'ksp_type': self.prm['ksp_type'][%r], 'pc_type': self.prm['precond'][%r]})" %(i, var+'_', i, var, var))
 
@@ -446,13 +472,10 @@ class PDESystem:
 		Description:
 		This function calls on each of the available pdesubsystems and solve for their respective variables
 
-		:params time_update: A switch to determine whether this problem has time
-		dependent boundary conditions and variables. select True if yes.
+		:params time_update: A switch to determine whether this problem has time dependent boundary conditions and variables. select True if yes.
 		:type time_update: `bool`
 
-		:returns: None. Solution functions are stored in and updated in the
-		self.form_args attribute. This solve function only updates the values in
-		self.form_args.
+		:returns: None. Solution functions are stored in and updated in the self.form_args attribute. This solve function only updates the values in self.form_args.
 		:rtype: None
 		"""
 		# call on the obtain form function to retrieve forms from PDESubsystems
@@ -478,13 +501,19 @@ class PDESystem:
 			abacus[var] += 1
 			# for all subsequent subspaces, instead of adding a new list,
 			# merge together all of the boundary conditions
-			for j in range(1, self.prm['order'][var]):
-				boundaries[i].extend(self.bc[var][abacus[var]][0])
-				abacus[var] += 1
+			if self.prm['order'][var] > 1:
+				for j in range(1, self.prm['order'][var]):
+					boundaries[i].extend(self.bc[var][abacus[var]][0])
+					abacus[var] += 1
+			# if Taylor hood element
+			if self.prm['space'][var] == 'TH':
+				if not boundaries[i]:
+					boundaries[i].extend(self.bc[var][abacus[var]][0])
+					abacus[var] += 1
+		# print(boundaries)
 		tstart = self.tstart
 		tend = self.tend
 		dt = self.dt
-
 		# if there is a time updated condition and boundaries need to be updated
 		if time_update:
 			while tstart < tend:
@@ -493,6 +522,7 @@ class PDESystem:
 				# repeated variables and boundary conditions
 				abacus = dict.fromkeys(set(self.var_seq), 0)
 				for i, var in enumerate(self.var_seq):
+					# print(var)
 					# first try the linear solve methods
 					try:
 						eval(self.linear_solve[i])
@@ -513,6 +543,21 @@ class PDESystem:
 						else:
 							boundaries[i][abacus[var]] = fd.DirichletBC(self.V[var], self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])
 							abacus[var] += 1
+					# special taylor hood updating sequence
+					elif self.prm['space'][var] == 'TH':
+						# print('weee')
+						if len(boundaries[i]) == 1:
+							# print('yooooo')
+							for i in range(2):
+								if self.bc[var][abacus[var]][-1] == 'update':
+									boundaries[0] = [fd.DirichletBC(self.V[var].sub(self.bc[var][abacus[var]][3]), self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])]
+								abacus[var] += 1
+						else:
+							for i in range(2):
+								if self.bc[var][abacus[var]][-1] == 'update':
+									boundaries[i] = fd.DirichletBC(self.V[var].sub(self.bc[var][abacus[var]][3]), self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])
+								abacus[var] += 1
+					# print(boundaries)
 					abacus[var] += 1
 				for var in self.var_seq:
 					# assign next timestep variables
@@ -565,11 +610,10 @@ class PDESystem:
 		PDESystem class. The function automatically calls a series of update functions to generate the new function
 		spaces and form args
 
-		:params composition: A list of variable names to be added to the
-		PDESystem. i.e. ['cd', 'cs', 'as']
+		:params composition: A list of variable names to be added to the PDESystem. i.e. ['cd', 'cs', 'as']
 		:type composition: `list`.
-		:params parameters: A dictionary of parameters with keys
-		of the new composition to be added. i.e. {'family' : {'cd' : }, ...}
+
+		:params parameters: A dictionary of parameters with keys of the new composition to be added. i.e. {'family' : {'cd' : }, ...}
 		:type parameters: `dictionary`
 		"""
 		# check to see if the new system variables added are in a list and if not,
@@ -594,27 +638,25 @@ class PDESystem:
 		# update the function spaces
 		self.update_function_spaces(composition, self.mesh, self.prm['degree'], self.prm['space'], self.prm['order'], self.prm['family'])
 		# create new variable trial and test functions
-		self.update_trial_test(composition, self.prm['order'])
+		self.update_trial_test(composition, self.prm['order'], self.prm['space'])
 		# create new variable current and next iteration functions
-		self.update_form_args(composition, self.prm['order'])
+		self.update_form_args(composition, self.prm['order'], self.prm['space'])
 
 	def setup_initial(self, var, expression, mixedspace=False, **kwargs):
 		"""
 		This function interpolates an expression onto a variable. Used for setting
 		up initalized Functions.
 
-		:params var: variable name. The key to the Function to be interpolated.
-		i.e. 'cd'
+		:params var: variable name. The key to the Function to be interpolated. i.e. 'cd'
 		:type var: `str`
-		:params expression: a Firedrake expression. NOTE, this is not the same
-		as a firedrake.Expression object. expression here can include firedrake
-		Constants(), or firedrake conditionals(). i.e. fd.exp(x*y*t)
+
+		:params expression: a Firedrake expression. NOTE, this is not the same as a firedrake.Expression object. expression here can include firedrake Constants(), or firedrake conditionals(). i.e. fd.exp(x*y*t)
 		:type expression: `see description`
-		:params mixedspace: a switch to determine whether the variable is a
-		MixedFunctionSpace.
+
+		:params mixedspace: a switch to determine whether the variable is a MixedFunctionSpace or Taylorhood.
 		:type mixedspace: `bool`
 
-		:**kwargs:
+		:kwargs:
 			index: `int`. the specific subspace of the MixedFunctionSpace to
 			apply the initial condition. i.e. index = 0 for the first component
 			of the MixedFunctionSpace
@@ -631,9 +673,7 @@ class PDESystem:
 		self.form_args. The constants are dependent on the variable names
 		expressed in the forms function of PDESubsystems.
 
-		:params dictionary: keys with the same name as the arguments used in the variational forms,
-		values can be firedrake Constants, Conditionals, or other firedrake classes (ex. FacetNormal)
-		i.e. {'k' : fd.Constant(self.prm['dt'])}
+		:params dictionary: keys with the same name as the arguments used in the variational forms, values can be firedrake Constants, Conditionals, or other firedrake classes (ex. FacetNormal) i.e. {'k' : fd.Constant(self.prm['dt'])}
 		:type dictionary: `dictionary`
 
 		:returns constants: a dictionary containing all of the constants.
@@ -648,10 +688,7 @@ class PDESystem:
 		up boundary conditions as this function creates the boundary conditions
 		dictionary.
 
-		:params var_seq: A list of the variable sequence that a subsystem should
-		solve for. The length of this list should be equivalent to the number
-		of forms in the PDESubsystem specified for this subsystem. i.e.
-		['u', 'p', 'u'] for the Chorin projection scheme.
+		:params var_seq: A list of the variable sequence that a subsystem should solve for. The length of this list should be equivalent to the number of forms in the PDESubsystem specified for this subsystem. i.e. ['u', 'p', 'u'] for the Chorin projection scheme.
 		:type var_seq: `list`
 
 		:params name: The name of the subsystem that is defined. i.e. 'up'
@@ -677,7 +714,11 @@ class PDESystem:
 		# update the boundary conditin
 		# index 4 tells the solver which indexed subspace this boundary condition should
 		# be applied to. ex. 0 for the first index of a MixedFunctionSpace
-		self.bc.update(dict((name, [[[], None, None, None, None]] * self.prm['order'][name] * self.var_seq.count(name)) for name in self.var_seq))
+		for var in var_seq:
+			if self.prm['space'][name] == 'TH':
+				self.bc.update(dict([(var, [[[], None, None, None, None]] * 2)]))
+			else:
+				self.bc.update(dict([(var, [[[], None, None, None, None]] * self.prm['order'][var] * self.var_seq.count(var))]))
 		# initialize the subsystem dictionary with PDESubsystem objects
 		self.pdesubsystems[name] = subsystem(vars(self), var_seq)
 
@@ -690,28 +731,29 @@ class PDESystem:
 
 		:params var: the variable that will be tested in the MMS. ex. 'cd'
 		:type var: `char` or `str`
-		:params c_exact: an expression used to express the analytical manufactured
-		"solution"
+
+		:params c_exact: an expression used to express the analytical manufactured "solution"
 		:type c_exact: `sympy expression / equation`
-		:params spatial: a boolean switch to determine if the mms test is against
-		dt
+
+		:params spatial: a boolean switch to determine if the mms test is against dt
 		:type spatial: `bool`
-		:params temporal: a booolean switch to determine if the mms test is against
-		delta x
+
+		:params temporal: a booolean switch to determine if the mms test is against delta x
 		:type temporal: `bool`
-		:params f_dict: this dictionary converts sympy functions into firedrake
-		functions. Keys are strings representing sympy expressions and values are
-		firedrake functions ex. {'exp' : fd.exp}
+
+		:params f_dict: this dictionary converts sympy functions into firedrake functions. Keys are strings representing sympy expressions and values are firedrake functions ex. {'exp' : fd.exp}
 		:type f_dict: `dictionary`
+
 		:params dt_list: a list of delta t values to be used in the MMS test
 		:type dt_list: `list`
+
 		:params meshes: a list of firedrake.Mesh objects
 		:type meshes: `list`
-		:params plot: a boolean switch to allow plotting of the convergence
-		graphs
+
+		:params plot: a boolean switch to allow plotting of the convergence graphs
 		:type plot: `bool`
-		:params index: an integer signifiying which subspace of a MixedFunctionSpace
-		that the variable exists in
+
+		:params index: an integer signifiying which subspace of a MixedFunctionSpace that the variable exists in
 		:type index: `int`
 		"""
 
@@ -742,19 +784,17 @@ class PDESystem:
 
 		:params var: the variable that will be tested in the MMS. ex. 'cd'
 		:type var: `char` or `str`
-		:params c_exact: an expression used to express the analytical manufactured
-		"solution"
+
+		:params c_exact: an expression used to express the analytical manufactured "solution"
 		:type c_exact: `sympy expression / equation`
-		:params spatial: a boolean switch to determine if the mms test is against
-		dt
-		:params f_dict: this dictionary converts sympy functions into firedrake
-		functions. Keys are strings representing sympy expressions and values are
-		firedrake functions ex. {'exp' : fd.exp}
+
+		:params f_dict: this dictionary converts sympy functions into firedrake functions. Keys are strings representing sympy expressions and values are firedrake functions ex. {'exp' : fd.exp}
 		:type f_dict: `dictionary`
+
 		:params meshes: a list of firedrake.Mesh objects
 		:type meshes: `list`
-		:params index: an integer signifiying which subspace of a MixedFunctionSpace
-		that the variable exists in
+
+		:params index: an integer signifiying which subspace of a MixedFunctionSpace that the variable exists in
 		:type index: `int`
 		"""
 		# extract the 'str' or 'char' values of the symbol Symbols objects
@@ -792,8 +832,8 @@ class PDESystem:
 
 			# reinitialize the function spaces and functions for each different mesh
 			self.setup_function_spaces(self.mesh, self.prm['degree'], self.prm['space'], self.prm['order'], self.prm['family'])
-			self.setup_trial_test(self.prm['order'])
-			self.setup_form_args(self.prm['order'])
+			self.setup_trial_test(self.prm['order'], self.prm['space'])
+			self.setup_form_args(self.prm['order'], self.prm['space'])
 			self.setup_constants()
 			# reinitialize the PDESubsystems with new mesh arguments
 			for name in self.system_names:
@@ -812,6 +852,7 @@ class PDESystem:
 				solution = fd.interpolate(function(**function_fin), self.V[var][index])
 				self.error.append(fd.errornorm(solution, self.form_args[var+'_n'].split()[index]))
 
+
 	def dt_test(self, var, c_exact, dt_list, f_dict, index):
 		"""
 		Description:
@@ -821,19 +862,17 @@ class PDESystem:
 
 		:params var: the variable that will be tested in the MMS. ex. 'cd'
 		:type var: `char` or `str`
-		:params c_exact: an expression used to express the analytical manufactured
-		"solution"
+
+		:params c_exact: an expression used to express the analytical manufactured "solution"
 		:type c_exact: `sympy expression / equation`
-		:params spatial: a boolean switch to determine if the mms test is against
-		dt
-		:params f_dict: this dictionary converts sympy functions into firedrake
-		functions. Keys are strings representing sympy expressions and values are
-		firedrake functions ex. {'exp' : fd.exp}
+
+		:params f_dict: this dictionary converts sympy functions into firedrake functions. Keys are strings representing sympy expressions and values are firedrake functions ex. {'exp' : fd.exp}
 		:type f_dict: `dictionary`
+
 		:params dt_list: a list of delta t values
 		:type dt_list: `list`
-		:params index: an integer signifiying which subspace of a MixedFunctionSpace
-		that the variable exists in
+
+		:params index: an integer signifiying which subspace of a MixedFunctionSpace that the variable exists in
 		:type index: `int`
 		"""
 		# extract the 'str' or 'char' values of the symbol Symbols objects
@@ -870,8 +909,8 @@ class PDESystem:
 			self.t = fd.Constant(self.tstart)
 			# reinitialize the function spaces and functions for each different mesh
 			self.setup_function_spaces(self.mesh, self.prm['degree'], self.prm['space'], self.prm['order'], self.prm['family'])
-			self.setup_trial_test(self.prm['order'])
-			self.setup_form_args(self.prm['order'])
+			self.setup_trial_test(self.prm['order'], self.prm['space'])
+			self.setup_form_args(self.prm['order'], self.prm['space'])
 			self.setup_constants()
 			for name in self.system_names:
 				self.pdesubsystems[name].get_form(self.form_args, self.constants)
@@ -888,6 +927,12 @@ class PDESystem:
 				solution = fd.interpolate(function(**function_fin), self.V[var][index])
 				self.error.append(fd.errornorm(solution, self.form_args[var+'_n'].split()[index]))
 
+	def view_args(self):
+		"""
+		This function prints all of the form_args keys, or names of the trial, test, and functions created in the current solver
+		"""
+		print(self.form_args.keys())
+
 def get_dx(mesh):
 	"""
 	Description:
@@ -899,7 +944,7 @@ def get_dx(mesh):
 	b = fd.Function(DG0).interpolate(fd.CellVolume(mesh))
 	mean = b.dat.data.mean()
 
-	return np.sqrt(2*mean)
+	return 2*np.sqrt(mean)
 
 def plot_error(x, y, var):
 	"""

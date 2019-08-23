@@ -19,8 +19,8 @@ class PDESubsystem:
 
 	:param solver_namespace: a dictionary of all vars from the PDESystem object.
 	:type solver_namespace: `dictionary`
-	:param var_sequence: a list of the variables to be solved. i.e. ['u', 'p',
-	'u'] for the navier stokes equation
+
+	:param var_sequence: a list of the variables to be solved. i.e. ['u', 'p', 'u'] for the navier stokes equation
 	:type var_sequence: `list`
 	"""
 	def __init__(self, solver_namespace, var_sequence):
@@ -50,8 +50,8 @@ class PDESubsystem:
 
 		Description:
 		Extracts the form_args that have been supplied by the system.
-		:returns self.form_args: a dictionary of all functions and Constants
-		created from the PDESystem
+
+		:returns self.form_args: a dictionary of all functions and Constants created from the PDESystem
 		:rtype self.form_args: `dictionary`
 		"""
 		form_args = self.solver_namespace['form_args']
@@ -69,8 +69,8 @@ class PDESubsystem:
 
 		:params form_args: a dictionary of trial, test, and functions
 		:type form_args: `dictionary`
-		:params constants: a dictionary of constants and firedrake parameters
-		such as conditionals, coordinates, FacetNormals, etc...
+
+		:params constants: a dictionary of constants and firedrake parameters such as conditionals, coordinates, FacetNormals, etc...
 		:type constants: `dictionary`
 		"""
 		# for variable in the sequence extract their forms

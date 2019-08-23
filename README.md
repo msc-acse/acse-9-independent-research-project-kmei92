@@ -1,7 +1,7 @@
 ### Build Status
 [![Build Status](https://travis-ci.com/msc-acse/acse-9-independent-research-project-kmei92.svg?branch=master)](https://travis-ci.com/msc-acse/acse-9-independent-research-project-kmei92)
 
-<img src="imgs/fireframe_rxns.png" title="Three component flow coupled chemical reactions" width="400" height="300" />
+<img src="imgs/fireframe_rxns.png" title="Three component flow coupled chemical reactions" width="400" height="300" /><img src="imgs/gibraltar_flow.png" title="Velocity of shallow water equations solved on the Strait of Gibraltar" width="400" height="300" />
 
 ## Introduction
 Fireframe is a programmable framework built on top of the Firedrake finite element library. Firedrake aims to automate the process
