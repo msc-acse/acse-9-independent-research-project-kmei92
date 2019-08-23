@@ -491,26 +491,21 @@ class PDESystem:
 		# create boundaries list to be used when solving
 		boundaries = [] # create how many boundaries
 
-		abacus = dict.fromkeys(set(self.var_seq), 0)
+		abacus = dict.fromkeys(self.names, 0)
 		# this loop will take the specified boundaries dictionary and add
 		# relatvant boundaries for each variable in the order that they are solved
 		# the abacus keeps track of repeated variables
 		for i, var in enumerate(self.var_seq):
-			# if the first variable
+			# create a boundary condition for every form
 			boundaries.append(self.bc[var][abacus[var]][0])
 			abacus[var] += 1
 			# for all subsequent subspaces, instead of adding a new list,
 			# merge together all of the boundary conditions
-			if self.prm['order'][var] > 1:
-				for j in range(1, self.prm['order'][var]):
+			if len(self.V[var]) > 1:
+				for i in range(1, len(self.V[var])):
 					boundaries[i].extend(self.bc[var][abacus[var]][0])
-					abacus[var] += 1
-			# if Taylor hood element
-			if self.prm['space'][var] == 'TH':
-				if not boundaries[i]:
-					boundaries[i].extend(self.bc[var][abacus[var]][0])
-					abacus[var] += 1
-		# print(boundaries)
+					abacus[var]+= 1
+		print(boundaries)
 		tstart = self.tstart
 		tend = self.tend
 		dt = self.dt
@@ -530,34 +525,21 @@ class PDESystem:
 					except:
 						eval(self.nonlinear_solve[i])
 					# check if boundary conditions need to be updated
-					if self.bc[var][abacus[var]][-1] == 'update':
-						# if a MixedFunctionSpace, check to see which subspaces
-						# require a boundary condition and update
-						if self.prm['order'][var] > 1:
-							boundaries[i][abacus[var]] = fd.DirichletBC(self.V[var].sub(self.bc[var][abacus[var]][3]), self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])
-							abacus[var] += 1
-						# update the boundary condition
-						elif len(self.bc[var]) == 1:
-							boundaries[i] = fd.DirichletBC(self.V[var], self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])
-							abacus[var] += 1
-						else:
-							boundaries[i][abacus[var]] = fd.DirichletBC(self.V[var], self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])
-							abacus[var] += 1
-					# special taylor hood updating sequence
-					elif self.prm['space'][var] == 'TH':
-						# print('weee')
-						if len(boundaries[i]) == 1:
-							# print('yooooo')
-							for i in range(2):
-								if self.bc[var][abacus[var]][-1] == 'update':
-									boundaries[0] = [fd.DirichletBC(self.V[var].sub(self.bc[var][abacus[var]][3]), self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])]
-								abacus[var] += 1
-						else:
-							for i in range(2):
-								if self.bc[var][abacus[var]][-1] == 'update':
-									boundaries[i] = fd.DirichletBC(self.V[var].sub(self.bc[var][abacus[var]][3]), self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])
-								abacus[var] += 1
-					# print(boundaries)
+					for j in range(len(self.V[var])):
+						print(i, j)
+						if self.bc[var][abacus[var] * len(self.V[var]) + j][-1] == 'update':
+							# if a MixedFunctionSpace, check to see which subspaces
+							# require a boundary condition and update
+							if len(self.V[var]) > 1 and len(boundaries[i]) > 1:
+								boundaries[i][j] = fd.DirichletBC(self.V[var].sub(self.bc[var][abacus[var]][3]), self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])
+							elif len(self.V[var]) > 1 and len(boundaries[i]) == 1:
+								print(len(boundaries[i]))
+								print(abacus[var])
+								print(var)
+								boundaries[i] = [fd.DirichletBC(self.V[var].sub(self.bc[var][abacus[var]][3]), self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])]
+							else:
+								boundaries[i] = [fd.DirichletBC(self.V[var], self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])]
+					print(boundaries)
 					abacus[var] += 1
 				for var in self.var_seq:
 					# assign next timestep variables
