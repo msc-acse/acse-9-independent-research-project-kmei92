@@ -35,18 +35,18 @@ def test_parameters():
 def test_load_mesh():
 
 	# flow_past_cylinder
-	mesh1 = fd.Mesh("../acse/meshes/flow_past_cylinder.msh")
+	mesh1 = fd.Mesh("meshes/flow_past_cylinder.msh")
 	# high resolution cylinder
-	mesh2 = fd.Mesh("../acse/meshes/cylinder.msh")
+	mesh2 = fd.Mesh("meshes/cylinder.msh")
 	assert(mesh1 is not None)
 	assert(mesh2 is not None)
 
 	for i in range(1, 11):
-		mesh = fd.Mesh("../acse/meshes/step%d.msh" % i)
+		mesh = fd.Mesh("meshes/step%d.msh" % i)
 		assert(mesh is not None)
 
 	for i in range(1, 6):
-		mesh = fd.Mesh("../acse/meshes/cylinder%d.msh" % i)
+		mesh = fd.Mesh("meshes/cylinder%d.msh" % i)
 		assert(mesh is not None)
 
 def test_flow_demo():
@@ -85,7 +85,7 @@ def test_flow_demo():
 	}
 	)
 
-	mesh = fd.Mesh("../acse/meshes/flow_past_cylinder.msh")
+	mesh = fd.Mesh("meshes/flow_past_cylinder.msh")
 	solver = pde_solver([['u', 'p']], mesh, solver_parameters)
 	solver.setup_constants()
 	solver.define(['u', 'p', 'u'], 'up', navier_stokes)
@@ -132,7 +132,7 @@ def test_rxn_demo():
 	 'T' : 1.0 }
 	)
 
-	mesh = fd.Mesh("../acse/meshes/cylinder.msh")
+	mesh = fd.Mesh("meshes/cylinder.msh")
 	solver = pde_solver([['u', 'p']], mesh, solver_parameters)
 	solver.add_subsystem('c', solver_parameters)
 	solver.setup_constants()
@@ -207,7 +207,7 @@ def test_radio_transport():
 	)
 
 	#load mesh
-	mesh = fd.Mesh("../acse/meshes/step10.msh")
+	mesh = fd.Mesh("meshes/step10.msh")
 	solver = pde_solver([['u', 'p']], mesh, solver_parameters)
 	solver.add_subsystem(['c', 'd'], solver_parameters)
 	solver.setup_constants()
@@ -264,7 +264,7 @@ def test_dx():
 	'T' : 0.1})
 
 	#load mesh
-	mesh = fd.Mesh("../acse/meshes/step1.msh")
+	mesh = fd.Mesh("meshes/step1.msh")
 
 	# add subsystems for navier stokes and radio_transport
 	solver = pde_solver([['u', 'p']], mesh, solver_parameters)
@@ -280,7 +280,7 @@ def test_dx():
 
 	x, y, t = sy.symbols(('x', 'y', 't'))
 	expr = sy.exp(x*y*t)
-	meshes = [fd.Mesh("../acse/meshes/step%d.msh" % i) for i in range(1, 2)]
+	meshes = [fd.Mesh("meshes/step%d.msh" % i) for i in range(1, 2)]
 	solver.test_mms('c', expr, spatial=True, f_dict={"exp":fd.exp}, meshes=meshes, plot=False, index=0)
 
 def test_dt():
@@ -332,7 +332,7 @@ def test_dt():
 	'T' : 0.1})
 
 	#load mesh
-	mesh = fd.Mesh("../acse/meshes/step1.msh")
+	mesh = fd.Mesh("meshes/step1.msh")
 	deltat = [0.01 / (2**i) for i in range(1)]
 
 	# add subsystems for navier stokes and radio_transport
