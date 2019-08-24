@@ -1,111 +1,752 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<html xmlns="http://www.w3.org/1999/xhtml" lang="Python">
-  <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>PDESystem Module &#8212; Fireframe 0.0.0 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="Python" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="Python" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>PDESystem Module &mdash; Fireframe 0.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Introduction" href="introduction.html" />
+    <link rel="next" title="PDESubsystem" href="pdesubsystem.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
    
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
-  </head><body>
-  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
           
 
-          <div class="body" role="main">
+          
+            <a href="index.html" class="icon icon-home"> Fireframe
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">PDESystem Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pdesubsystem.html">PDESubsystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pdeforms.html">The pdeforms</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Fireframe</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>PDESystem Module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/pdesystem.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
             
   <div class="section" id="pdesystem-module">
 <h1>PDESystem Module<a class="headerlink" href="#pdesystem-module" title="Permalink to this headline">¶</a></h1>
 <p>Contained here are the member functions of Fireframe's main class: PDESystem.</p>
+<span class="target" id="module-acse.fireframe.PDESystem"></span><p>author : Keer Mei
+email: <a class="reference external" href="mailto:keer&#46;mei18&#37;&#52;&#48;imperial&#46;ac&#46;uk">keer<span>&#46;</span>mei18<span>&#64;</span>imperial<span>&#46;</span>ac<span>&#46;</span>uk</a>
+github username: kmei92</p>
+<dl class="class">
+<dt id="acse.fireframe.PDESystem.PDESystem">
+<em class="property">class </em><code class="descclassname">acse.fireframe.PDESystem.</code><code class="descname">PDESystem</code><span class="sig-paren">(</span><em>system_composition</em>, <em>mesh</em>, <em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class was adapted from Mikael Mortensen on July, 2019.
+Source code can be found here:
+<a class="reference external" href="https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py">https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</a></p>
+<p>Description:
+The PDESystem class represents a complete set of Partial Differential Equations.
+A PDESystem can include a single set of PDEs, for example the Chorin projection
+scheme for the navier-stokes equation. Or, the PDESystem can contain a coupled
+set of PDEs, for example a radionuclide problem coupled with the Chorin projection
+equations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>system_composition</strong> (<cite>list</cite> of <cite>list</cite>) -- a list of list. i.e. [['u', 'p']] for navier-stokes</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Example:</dt>
+<dd>[['u', 'p']] a system with two variables, u and p.
+[['up']] a system with one variable, up. Most likely a MixedFunctionSpace.
+[['u'], ['p']] two coupled systems with single variable.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mesh</strong> (<cite>fd.Mesh object</cite>) -- a firedrake mesh object</li>
+<li><strong>parameters</strong> (<cite>dictionary</cite> of <cite>dictionary</cite>) -- see default_sovler_parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Attribute names:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first">a list of variables. i.e. ['u', 'p']</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Attribute system_names:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first">a list of system names. i.e. ['up', 'cdcsas']</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Attribute subsystem:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first">a dictionary of available subclasses. key = system_name, value = PDESubsystem object. i.e. subsystem['up'] = navier_stokes</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Attribute constants:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><p class="first">a dictionary of constants. To be passed together with form_args. used in the forms of PDESubsystem objects.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Attribute tstart:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first">(int or float) default 0. Start time of problem</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Attribute t:</th><td class="field-body"><p class="first">firedrake Constant object. Time variable of the problem</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Attribute tend:</th><td class="field-body"><p class="first">(int or float) parameters['T'] value. End time of problem</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Attribute dt:</th><td class="field-body"><p class="first last">(int or float) parameters['dt']. Time step value of problem</p>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="acse.fireframe.PDESystem.PDESystem.add_subsystem">
+<code class="descname">add_subsystem</code><span class="sig-paren">(</span><em>composition</em>, <em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.add_subsystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.add_subsystem" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function was adapted from Mikael Mortensen on July, 2019.
+Source code can be found here:
+<a class="reference external" href="https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py">https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</a></p>
+<p>Description:
+This function allows users to create a new subsystem of PDEs with different variables within the overall
+PDESystem class. The function automatically calls a series of update functions to generate the new function
+spaces and form args</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Params composition:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">A list of variable names to be added to the PDESystem. i.e. ['cd', 'cs', 'as']</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Params parameters:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">A dictionary of parameters with keys of the new composition to be added. i.e. {'family' : {'cd' : }, ...}</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="acse.fireframe.PDESystem.PDESystem.define">
+<code class="descname">define</code><span class="sig-paren">(</span><em>var_seq</em>, <em>name</em>, <em>subsystem</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.define"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.define" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function specifies PDESubsystem objects for each individual subsystem
+inside the overall PDESystem. This function must be called before setting
+up boundary conditions as this function creates the boundary conditions
+dictionary.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Params var_seq:</th><td class="field-body">A list of the variable sequence that a subsystem should solve for. The length of this list should be equivalent to the number of forms in the PDESubsystem specified for this subsystem. i.e. ['u', 'p', 'u'] for the Chorin projection scheme.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Params name:</th><td class="field-body">The name of the subsystem that is defined. i.e. 'up'</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return self.bc:</th><td class="field-body">A dictionary of all of the variables in the var_seq.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Rtype self.bc:</th><td class="field-body"><cite>dictionary</cite></td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Return self.pdesystems:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">a dictionary of</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Rtype self.pdesystems:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><cite>dictionary</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="acse.fireframe.PDESystem.PDESystem.dt_test">
+<code class="descname">dt_test</code><span class="sig-paren">(</span><em>var</em>, <em>c_exact</em>, <em>dt_list</em>, <em>f_dict</em>, <em>index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.dt_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.dt_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Description:</p>
+<p>This function calculates the l2 norm between the exact mms solution and
+the numerical solution against incremental values of dt.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Params var:</th><td class="field-body">the variable that will be tested in the MMS. ex. 'cd'</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Params c_exact:</th><td class="field-body">an expression used to express the analytical manufactured &quot;solution&quot;</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Params f_dict:</th><td class="field-body">this dictionary converts sympy functions into firedrake functions. Keys are strings representing sympy expressions and values are firedrake functions ex. {'exp' : fd.exp}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Params dt_list:</th><td class="field-body">a list of delta t values</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Params index:</th><td class="field-body">an integer signifiying which subspace of a MixedFunctionSpace that the variable exists in</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="acse.fireframe.PDESystem.PDESystem.dx_test">
+<code class="descname">dx_test</code><span class="sig-paren">(</span><em>var</em>, <em>c_exact</em>, <em>meshes</em>, <em>f_dict</em>, <em>index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.dx_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.dx_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Description:</p>
+<p>This function calculates the l2 norm between the exact mms solution and
+the numerical solution against incremental values of dx.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Params var:</th><td class="field-body">the variable that will be tested in the MMS. ex. 'cd'</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Params c_exact:</th><td class="field-body">an expression used to express the analytical manufactured &quot;solution&quot;</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Params f_dict:</th><td class="field-body">this dictionary converts sympy functions into firedrake functions. Keys are strings representing sympy expressions and values are firedrake functions ex. {'exp' : fd.exp}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Params meshes:</th><td class="field-body">a list of firedrake.Mesh objects</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Params index:</th><td class="field-body">an integer signifiying which subspace of a MixedFunctionSpace that the variable exists in</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="acse.fireframe.PDESystem.PDESystem.obtain_forms">
+<code class="descname">obtain_forms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.obtain_forms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.obtain_forms" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function retrieves the variational forms, LHS, and RHS
+from the PDESubsystem objects. This function should is called in solve.
+The solve function should only be called once each subsystem has been
+defined!</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns forms:</th><td class="field-body">A list of UFL expressions of the variational forms of the underlying PDEs.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Rtypes forms:</th><td class="field-body"><cite>list</cite></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns a:</th><td class="field-body">A list of UFL expressions of the LHS of the variational forms.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Rtypes a:</th><td class="field-body"><cite>list</cite></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns L:</th><td class="field-body">A list of UFL expressions of the RHS of the underlying variational forms.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Rtypes L:</th><td class="field-body"><cite>list</cite></td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Returns linear_solve:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">A list of strings to be called using eval() in the solve function. i.e. fd.solve(a == L)</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Rtypes linear_solve:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><cite>list</cite></td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Returns nonlinear_solve:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">A list of strings to be called using eval() in the solve function. i.e. fd.solve(F==0)</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Rtypes nonlinear_solve:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><cite>list</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="acse.fireframe.PDESystem.PDESystem.setup_constants">
+<code class="descname">setup_constants</code><span class="sig-paren">(</span><em>dictionary</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.setup_constants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.setup_constants" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function sets up a constants dictionary to be passed together with
+self.form_args. The constants are dependent on the variable names
+expressed in the forms function of PDESubsystems.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Params dictionary:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">keys with the same name as the arguments used in the variational forms, values can be firedrake Constants, Conditionals, or other firedrake classes (ex. FacetNormal) i.e. {'k' : fd.Constant(self.prm['dt'])}</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns constants:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">a dictionary containing all of the constants.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Rtype constants:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><cite>dictionary</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="acse.fireframe.PDESystem.PDESystem.setup_form_args">
+<code class="descname">setup_form_args</code><span class="sig-paren">(</span><em>order</em>, <em>space</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.setup_form_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.setup_form_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function was adapted from Mikael Mortensen on July, 2019.
+Source code can be found here:
+<a class="reference external" href="https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py">https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</a></p>
+<p>Description:
+This function creates all of the current and future iterations of variables
+Functions to be used the the in the variational form.  It also retrieves
+self.qt and self.vt and combines all Functions, TrialFunctions and
+TestFunctions into one dictioanry.
+It is dependent on the variable names given to the PDESystem.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Params order:</th><td class="field-body">A dictionary with keys of variable names and values of integers. i.e. {'c' : 3}</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns self.form_args:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">A dictionary with keys of variable names + suffix '_trl' and Firedrake TrialFunction or TrialFunctions objects. i.e. {'<a href="#id3"><span class="problematic" id="id4">u_</span></a>': fd.Function, 'u_n': fd.Function, 'u_trl':fd.TrialFunction, 'u_tst' : fd.TestFunction}</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Rtype self.form_args:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><cite>dictionary</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="acse.fireframe.PDESystem.PDESystem.setup_function_spaces">
+<code class="descname">setup_function_spaces</code><span class="sig-paren">(</span><em>mesh</em>, <em>degree</em>, <em>space</em>, <em>order</em>, <em>family</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.setup_function_spaces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.setup_function_spaces" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function was adapted from Mikael Mortensen on July, 2019.
+Source code can be found here:
+<a class="reference external" href="https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py">https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</a></p>
+<p>Description:
+This function creates function spaces for each of the subsystems
+There is a check on whether the subsystem contains a MixedFunctionSpace</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Params mesh:</th><td class="field-body">A Firedrake mesh object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Params degree:</th><td class="field-body">A dictionary with keys of variable names and values of integers. i.e. {'u' : 1, 'p' : 1}</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Params space:</th><td class="field-body">A dictionary with keys of variable names and values of firedrake function space methods. i.e. {'u' : fd.VectorFunctionSpace}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Params order:</th><td class="field-body">A dictionary with keys of variable names and values of integers. i.e. {'u' : 1, 'p' : 1}</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Params family:</th><td class="field-body">A dictionary with keys of variable names and values of Firedrake finite element familys. i.e. {'u' : 'DG', 'p' : 'CG'}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns self.V:</th><td class="field-body">A dictionary with keys of variable names and values of Firedrake function space objects. i.e. {'u': fd.VectorFunctionSpace, 'p': fd.FunctionSpace, 'cd' : fd.MixedFunctionSpace}</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Rtype self.V:</th><td class="field-body"><cite>dictionary</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="acse.fireframe.PDESystem.PDESystem.setup_initial">
+<code class="descname">setup_initial</code><span class="sig-paren">(</span><em>var</em>, <em>expression</em>, <em>mixedspace=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.setup_initial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.setup_initial" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function interpolates an expression onto a variable. Used for setting
+up initalized Functions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Params var:</th><td class="field-body">variable name. The key to the Function to be interpolated. i.e. 'cd'</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Params expression:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">a Firedrake expression. NOTE, this is not the same as a firedrake.Expression object. expression here can include firedrake Constants(), or firedrake conditionals(). i.e. fd.exp(x*y*t)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Params mixedspace:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">a switch to determine whether the variable is a MixedFunctionSpace or Taylorhood.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Kwargs:</th><td class="field-body">index: <cite>int</cite>. the specific subspace of the MixedFunctionSpace to
+apply the initial condition. i.e. index = 0 for the first component
+of the MixedFunctionSpace</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="acse.fireframe.PDESystem.PDESystem.setup_system">
+<code class="descname">setup_system</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.setup_system"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.setup_system" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function was adapted from Mikael Mortensen on July, 2019.
+Source code can be found here:
+<a class="reference external" href="https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py">https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</a></p>
+<p>Description:
+This function calls on other member functions of the PDESystem class to set up function spaces,
+the subsystems (depending on how many coupled systems of PDEs there are) and creates the form_args
+(the form_args are the variables that the PDESystem will solve for)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returns self.names:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">a list of variables</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><cite>list</cite></td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Returns self.system_names:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">a list of system variables</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><cite>list</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="acse.fireframe.PDESystem.PDESystem.setup_trial_test">
+<code class="descname">setup_trial_test</code><span class="sig-paren">(</span><em>order</em>, <em>space</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.setup_trial_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.setup_trial_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function was adapted from Mikael Mortensen on July, 2019.
+Source code can be found here:
+<a class="reference external" href="https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py">https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</a></p>
+<p>Description:
+This function creates all of the trial and test functions to be used the the in the
+variational form. It is dependent on the variable names given to the PDESystem</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Params order:</th><td class="field-body">A dictionary with keys of variable names and values of integers. i.e. {'c' : 3}</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns self.qt:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">A dictionary with keys of variable names + suffix '_trl' and Firedrake TrialFunction or TrialFunctions objects. i.e. {'u_trl', fd.TrialFunction}</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Rtype self.qt:</th><td class="field-body"><cite>dictionary</cite></td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns self.vt:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">A dictionary with keys of variable names + suffix '_tst' and Firedrake TestFunction or TestFunctions objects. i.e. {'u_trl', fd.TestFunction}</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Rtype self.vt:</th><td class="field-body"><cite>dictionary</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="acse.fireframe.PDESystem.PDESystem.solve">
+<code class="descname">solve</code><span class="sig-paren">(</span><em>time_update=False</em>, <em>save_vars=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function was adapted from Mikael Mortensen on July, 2019.
+Source code can be found here:
+<a class="reference external" href="https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py">https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</a></p>
+<p>Description:
+This function calls on each of the available pdesubsystems and solve for their respective variables</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Params time_update:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">A switch to determine whether this problem has time dependent boundary conditions and variables. select True if yes.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None. Solution functions are stored in and updated in the self.form_args attribute. This solve function only updates the values in self.form_args.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="acse.fireframe.PDESystem.PDESystem.test_mms">
+<code class="descname">test_mms</code><span class="sig-paren">(</span><em>var</em>, <em>c_exact</em>, <em>spatial=False</em>, <em>temporal=False</em>, <em>f_dict={}</em>, <em>dt_list=[]</em>, <em>meshes=[]</em>, <em>plot=False</em>, <em>index=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.test_mms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.test_mms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Description
+This function allows users to test a PDESystem's variable by asking for a manufactured
+analytical solution. This function can either be set to test against spatial or temporal
+discretization.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Params var:</th><td class="field-body">the variable that will be tested in the MMS. ex. 'cd'</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Params c_exact:</th><td class="field-body">an expression used to express the analytical manufactured &quot;solution&quot;</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Params spatial:</th><td class="field-body">a boolean switch to determine if the mms test is against dt</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Params temporal:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">a booolean switch to determine if the mms test is against delta x</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Params f_dict:</th><td class="field-body">this dictionary converts sympy functions into firedrake functions. Keys are strings representing sympy expressions and values are firedrake functions ex. {'exp' : fd.exp}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Params dt_list:</th><td class="field-body">a list of delta t values to be used in the MMS test</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Params meshes:</th><td class="field-body">a list of firedrake.Mesh objects</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Params plot:</th><td class="field-body">a boolean switch to allow plotting of the convergence graphs</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Params index:</th><td class="field-body">an integer signifiying which subspace of a MixedFunctionSpace that the variable exists in</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="acse.fireframe.PDESystem.PDESystem.update_form_args">
+<code class="descname">update_form_args</code><span class="sig-paren">(</span><em>name_list</em>, <em>order</em>, <em>space</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.update_form_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.update_form_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Description:
+This function updates self.form_args dictionary when a new subsystem
+is added to the PDESystem.</p>
+<p>:params order:. A dictionary with keys of variable names and values of integers. i.e. {'c' : 3}
+:type order: <cite>dictionary</cite></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returns self.form_args:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">A dictionary with keys of variable names + suffix '_trl' and Firedrake TrialFunction or TrialFunctions objects. i.e. {'<a href="#id5"><span class="problematic" id="id6">u_</span></a>': fd.Function, 'u_n': fd.Function, 'u_trl':fd.TrialFunction, 'u_tst' : fd.TestFunction}</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Rtype self.form_args:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><cite>dictionary</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="acse.fireframe.PDESystem.PDESystem.update_function_spaces">
+<code class="descname">update_function_spaces</code><span class="sig-paren">(</span><em>name_list</em>, <em>mesh</em>, <em>degree</em>, <em>space</em>, <em>order</em>, <em>family</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.update_function_spaces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.update_function_spaces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Description:
+This function updates function spaces when a new subsystem is added to
+the PDESystem.
+There is a check on whether the subsystem contains a MixedFunctionSpace</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Params mesh:</th><td class="field-body">A Firedrake mesh object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Params degree:</th><td class="field-body">A dictionary with keys of variable names and values of integers. i.e. {'u' : 1, 'p' : 1}</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Params space:</th><td class="field-body">A dictionary with keys of variable names and values of firedrake function space methods. i.e. {'u' : fd.VectorFunctionSpace}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Params order:</th><td class="field-body">A dictionary with keys of variable names and values of integers. i.e. {'u' : 1, 'p' : 1}</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Params family:</th><td class="field-body">A dictionary with keys of variable names and values of Firedrake finite element familys. i.e. {'u' : 'DG', 'p' : 'CG'}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns self.V:</th><td class="field-body">A dictionary with keys of variable names and values of Firedrake function space objects. i.e. {'u': fd.VectorFunctionSpace, 'p': fd.FunctionSpace, 'cd' : fd.MixedFunctionSpace}</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Rtype self.V:</th><td class="field-body"><cite>dictionary</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="acse.fireframe.PDESystem.PDESystem.update_trial_test">
+<code class="descname">update_trial_test</code><span class="sig-paren">(</span><em>name_list</em>, <em>order</em>, <em>space</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.update_trial_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.update_trial_test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Description:
+This function updates self.qt and self.vt when a new subsystem is added.
+It is dependent on the variable names given to the PDESystem.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Params name_list:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">A list of variables. i.e. ['cd', 'cs', 'as']</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Params order:</th><td class="field-body">A dictionary with keys of variable names and values of integers. i.e. {'c' : 3}</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Returns self.qt:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">A dictionary with keys of variable names + suffix '_trl' and Firedrake TrialFunction or TrialFunctions objects. i.e. {'u_trl', fd.TrialFunction}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Rtype self.qt:</th><td class="field-body"><cite>dictionary</cite></td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">Returns self.vt:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">A dictionary with keys of variable names + suffix '_tst' and Firedrake TestFunction or TestFunctions objects. i.e. {'u_trl', fd.TestFunction}</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Rtype self.vt:</th><td class="field-body"><cite>dictionary</cite></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="acse.fireframe.PDESystem.PDESystem.view_args">
+<code class="descname">view_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.view_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.view_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function prints all of the form_args keys, or names of the trial, test, and functions created in the current solver</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="acse.fireframe.PDESystem.get_dx">
+<code class="descclassname">acse.fireframe.PDESystem.</code><code class="descname">get_dx</code><span class="sig-paren">(</span><em>mesh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#get_dx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.get_dx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Description:
+This function returns the average delta x values of a firedrake.Mesh
+It makes a simplyfying assumption that finite elements are equilateral
+triangles.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="acse.fireframe.PDESystem.plot_error">
+<code class="descclassname">acse.fireframe.PDESystem.</code><code class="descname">plot_error</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>var</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#plot_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.plot_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Description:
+A simple matplotlib wrapper to plot the logarithmic curves of error vs
+dt or dx. Fits a linear line to the data points to determine convergence rate.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="acse.fireframe.PDESystem.recursive_update">
+<code class="descclassname">acse.fireframe.PDESystem.</code><code class="descname">recursive_update</code><span class="sig-paren">(</span><em>dst</em>, <em>src</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#recursive_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.recursive_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function was obtained from Mikael Mortensen on July, 2019.
+Source code can be found here:
+<a class="reference external" href="https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py">https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</a></p>
+<p>Description:
+Update dict dst with items from src deeply (&quot;deep update&quot;).</p>
+</dd></dl>
+
 </div>
 
 
+           </div>
+           
           </div>
-          
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">Fireframe</a></h1>
-
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">PDESystem Module</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="introduction.html" title="previous chapter">Introduction</a></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="pdesubsystem.html" class="btn btn-neutral float-right" title="PDESubsystem" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="introduction.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+  
 
+  <hr/>
 
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Keer Mei
 
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
-
-
-
+</footer>
 
         </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2019, Keer Mei.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="_sources/pdesystem.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
 
-    
+    </section>
 
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
     
-  </body>
+   
+
+</body>
 </html>

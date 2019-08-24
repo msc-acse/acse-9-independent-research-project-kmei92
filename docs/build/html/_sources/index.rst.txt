@@ -13,7 +13,6 @@ Welcome to Fireframe's documentation!
    pdesystem
    pdesubsystem
    pdeforms
-   examples	
 
 
 Indices and tables
