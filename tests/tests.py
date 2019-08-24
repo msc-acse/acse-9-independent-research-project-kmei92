@@ -35,18 +35,18 @@ def test_parameters():
 def test_load_mesh():
 
 	# flow_past_cylinder
-	mesh1 = fd.Mesh("../acse/meshes/flow_past_cylinder.msh")
+	mesh1 = fd.Mesh("acse/meshes/flow_past_cylinder.msh")
 	# high resolution cylinder
-	mesh2 = fd.Mesh("../acse/meshes/cylinder.msh")
+	mesh2 = fd.Mesh("acse/meshes/cylinder.msh")
 	assert(mesh1 is not None)
 	assert(mesh2 is not None)
 
 	for i in range(1, 11):
-		mesh = fd.Mesh("../acse/meshes/step%d.msh" % i)
+		mesh = fd.Mesh("acse/meshes/step%d.msh" % i)
 		assert(mesh is not None)
 
 	for i in range(1, 6):
-		mesh = fd.Mesh("../acse/meshes/cylinder%d.msh" % i)
+		mesh = fd.Mesh("acse/meshes/cylinder%d.msh" % i)
 		assert(mesh is not None)
 
 def test_flow_demo():
