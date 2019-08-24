@@ -37,6 +37,8 @@ from PDESubsystem import *
 
 from pdeforms import *
 ```
+## Documentation
+For the latest build of Fireframe documentation, visit [here](https://fireframe.readthedocs.io/en/latest/index.html)
 
 ## Dependencies
 Fireframe relies on the following external libraries:
