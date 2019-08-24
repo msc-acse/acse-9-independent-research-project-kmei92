@@ -189,7 +189,7 @@ class PDESystem:
 					assert len(degree[name]) == len(space[name])
 					for i in range(len(space[name])):
 						total_space[i] = space[name][i](mesh, family[name], degree[name][i])
-				elif isintance(family[name], list):
+				elif isinstance(family[name], list):
 					# check that the user has input a correct list
 					assert len(family[name]) == len(space[name])
 					for i in range(len(space[name])):
