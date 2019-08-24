@@ -168,18 +168,33 @@ class PDESystem:
 		V = {}
 		# for each variable
 		for name in self.names:
-			# order > 1 should be MixedFunctionSpace
+			# order > 1 should be MixedFunctionSpace of generic function spaces
 			if order[name] > 1:
 				# create individual fd.FunctionSpaces multipled by total order#
 				total_space = []
 				single_space = fd.FunctionSpace(mesh, family[name], degree[name])
 				total_space = [single_space for i in range(order[name])]
 				V.update(dict([(name, space[name](total_space))]))
-			# special scenario for taylor hood elements
-			elif space[name] == 'TH':
-				T = fd.VectorFunctionSpace(mesh, family[name], 1)
-				H = fd.FunctionSpace(mesh, family[name], 2)
-				V.update(dict([(name, T*H)]))
+			# special scenario for user specified MixedLists
+			elif isinstance(space[name], list) :
+				total_space = [0] * len(space[name])
+				if isinstance(degree[name], list) and isinstance(family[name], list):
+					# check that the user has input a correct list
+					assert len(degree[name]) == len(space[name])
+					assert len(family[name]) == len(space[name])
+					for i in range(len(space[name])):
+						total_space[i] = space[name][i](mesh, family[name][i], degree[name][i])
+				elif isinstance(degree[name], list):
+					# check that the user has input a correct list
+					assert len(degree[name]) == len(space[name])
+					for i in range(len(space[name])):
+						total_space[i] = space[name][i](mesh, family[name], degree[name][i])
+				elif isintance(family[name], list):
+					# check that the user has input a correct list
+					assert len(family[name]) == len(space[name])
+					for i in range(len(space[name])):
+						total_space[i] = space[name][i](mesh, family[name][i], degree[name])
+				V.update(dict([(name, fd.MixedFunctionSpace(total_space))]))
 			# use the parameters['space'] value to determine type of function space
 			else:
 				V.update(dict([(name, space[name](mesh, family[name], degree[name]))]))
@@ -220,12 +235,26 @@ class PDESystem:
 				single_space = fd.FunctionSpace(mesh, family[name], degree[name])
 				total_space = [single_space for i in range(order[name])]
 				self.V.update(dict([(name, space[name](total_space))]))
-			# special scenario for taylor hood elements
-			elif space[name] == 'TH':
-				T = fd.VectorFunctionSpace(mesh, family[name], 1)
-				H = fd.FunctionSpace(mesh, family[name], 2)
-				self.T, self.H = T, H
-				self.V.update(dict([(name, T*H)]))
+			# special scenario for MixedLists
+			elif isinstance(space[name], list):
+				total_space = [0] * len(space[name])
+				if isinstance(degree[name], list) and isinstance(family[name], list):
+					# check that the user has input a correct list
+					assert len(degree[name]) == len(space[name])
+					assert len(family[name]) == len(space[name])
+					for i in range(len(space[name])):
+						total_space[i] = space[name][i](mesh, family[name][i], degree[name][i])
+				elif isinstance(degree[name], list):
+					# check that the user has input a correct list
+					assert len(degree[name]) == len(space[name])
+					for i in range(len(space[name])):
+						total_space[i] = space[name][i](mesh, family[name], degree[name][i])
+				elif isinstance(family[name], list):
+					# check that the user has input a correct list
+					assert len(family[name]) == len(space[name])
+					for i in range(len(space[name])):
+						total_space[i] = space[name][i](mesh, family[name][i], degree[name])
+				self.V.update(dict([(name, fd.MixedFunctionSpace(total_space))]))
 			# use the parameters['space'] value to determine type of function space
 			else:
 				self.V.update(dict([(name, space[name](mesh, family[name], degree[name]))]))
@@ -260,10 +289,10 @@ class PDESystem:
 			if order[name] > 1:
 				q.update(dict( (name+'_trl%i'%(num), fd.TrialFunctions(V[name])[num-1]) for num in range(1, order[name]+1)))
 				v.update(dict( (name+'_tst%i'%(num), fd.TestFunctions(V[name])[num-1]) for num in range(1, order[name]+1)))
-			# if Taylor hood elements
-			elif space[name] == 'TH':
-				q.update(dict( (name+'_trl%i'%(num), fd.TrialFunctions(V[name])[num-1]) for num in range(1, 3)))
-				v.update(dict( (name+'_tst%i'%(num), fd.TestFunctions(V[name])[num-1]) for num in range(1, 3)))
+			# if special MixedLists
+			elif isinstance(space[name], list):
+				q.update(dict( (name+'_trl%i'%(num), fd.TrialFunctions(V[name])[num-1]) for num in range(1, len(space[name])+1)))
+				v.update(dict( (name+'_tst%i'%(num), fd.TestFunctions(V[name])[num-1]) for num in range(1, len(space[name])+1)))
 			# create Trial and Test
 			else:
 				q.update(dict( [ (name+'_trl', fd.TrialFunction(V[name])) ] ) )
@@ -297,10 +326,10 @@ class PDESystem:
 			if order[name] > 1:
 				self.qt.update(dict( (name+'_trl%i'%(num), fd.TrialFunctions(V[name])[num-1]) for num in range(1, order[name]+1)))
 				self.vt.update(dict( (name+'_tst%i'%(num), fd.TestFunctions(V[name])[num-1]) for num in range(1, order[name]+1)))
-			# if Taylor hood elements
-			elif space[name] == 'TH':
-				self.qt.update(dict( (name+'_trl%i'%(num), fd.TrialFunctions(V[name])[num-1]) for num in range(1, 3)))
-				self.vt.update(dict( (name+'_tst%i'%(num), fd.TestFunctions(V[name])[num-1]) for num in range(1, 3)))
+			# if special MixedLists
+			elif isinstance(space[name], list):
+				self.qt.update(dict( (name+'_trl%i'%(num), fd.TrialFunctions(V[name])[num-1]) for num in range(1,  len(space[name])+1)))
+				self.vt.update(dict( (name+'_tst%i'%(num), fd.TestFunctions(V[name])[num-1]) for num in range(1,  len(space[name])+1)))
 			# create Trial and Test
 			else:
 				self.qt.update(dict( [ (name+'_trl', fd.TrialFunction(V[name])) ] ) )
@@ -336,13 +365,13 @@ class PDESystem:
 				form_args.update(dict( [ (name + '_n', fd.Function(V[name])) ] ) ) # current
 				form_args.update(dict( (name+'_%i'%(num), form_args[name+'_'][num-1]) for num in range(1, order[name]+1))) # gets individual components
 				form_args.update(dict( (name+'_n%i'%(num), form_args[name+'_n'][num-1]) for num in range(1, order[name]+1))) # gets individual components
-			# if Taylor hood elements
-			elif space[name] == 'TH':
+			# if special MixedLists
+			elif isinstance(space[name], list):
 				# create current iteration '_n' and future iteration '_' functions
 				form_args.update(dict( [ (name + '_', fd.Function(V[name])) ] ) ) # next iteration
 				form_args.update(dict( [ (name + '_n', fd.Function(V[name])) ] ) ) # current
-				form_args.update(dict( (name+'_%i'%(num), form_args[name+'_'].split()[num-1]) for num in range(1, 3))) # gets individual components
-				form_args.update(dict( (name+'_n%i'%(num), form_args[name+'_n'].split()[num-1]) for num in range(1, 3))) # gets individual components
+				form_args.update(dict( (name+'_%i'%(num), form_args[name+'_'].split()[num-1]) for num in range(1, len(space[name])+1))) # gets individual components
+				form_args.update(dict( (name+'_n%i'%(num), form_args[name+'_n'].split()[num-1]) for num in range(1, len(space[name])+1))) # gets individual components
 			# create current iteration '_n' and future iteration '_' functions
 			else:
 				form_args.update(dict( [ (name + '_', fd.Function(V[name])) ] ) ) # next iteration
@@ -376,13 +405,13 @@ class PDESystem:
 				self.form_args.update(dict( [ (name + '_n', fd.Function(V[name])) ] ) ) # current
 				self.form_args.update(dict( (name+'_%i'%(num), self.form_args[name+'_'][num-1]) for num in range(1, order[name]+1))) # gets individual components
 				self.form_args.update(dict( (name+'_n%i'%(num), self.form_args[name+'_n'][num-1]) for num in range(1, order[name]+1))) # gets individual components
-			# if Taylor hood elements
-			elif space[name] == 'TH':
+			# if special MixedLists
+			elif isinstance(space[name], list):
 				# create current iteration '_n' and future iteration '_' functions
 				self.form_args.update(dict( [ (name + '_', fd.Function(V[name])) ] ) ) # next iteration
 				self.form_args.update(dict( [ (name + '_n', fd.Function(V[name])) ] ) ) # current
-				self.form_args.update(dict( (name+'_%i'%(num), form_args[name+'_'].split()[num-1]) for num in range(1, 3))) # gets individual components
-				self.form_args.update(dict( (name+'_n%i'%(num), form_args[name+'_n'].split()[num-1]) for num in range(1, 3))) # gets individual components
+				self.form_args.update(dict( (name+'_%i'%(num), form_args[name+'_'].split()[num-1]) for num in range(1, len(space[name])+1))) # gets individual components
+				self.form_args.update(dict( (name+'_n%i'%(num), form_args[name+'_n'].split()[num-1]) for num in range(1, len(space[name])+1))) # gets individual components
 			# create current iteration '_n' and future iteration '_' functions
 			else:
 				self.form_args.update(dict( [ (name + '_', fd.Function(V[name])) ] ) ) # next iteration
@@ -436,27 +465,23 @@ class PDESystem:
 		nonlinear_solve = []
 		# for each variable
 		for i, var in enumerate(self.var_seq):
-			if self.prm['order'][var] > 1 or self.prm['space'][var] == 'TH': # if mixedfunctionspace or Vector*Function
+			if len(self.V[var]) > 1 : # if mixedfunctionspace
 				linear_solve.append("fd.solve(self.a[%d] == self.L[%d], self.form_args[%r], bcs=boundaries[%d])" % (i, i, var+'_', i))
 				nonlinear_solve.append("fd.solve(self.forms[%d] == 0, self.form_args[%r], bcs=boundaries[%d])" % (i, var+'_', i))
 			# if neither are specified
 			elif var not in self.prm['ksp_type'] and var not in self.prm['precond']:
-				# print('yes')
 				linear_solve.append("fd.solve(self.a[%d] == self.L[%d], self.form_args[%r], bcs=boundaries[%d])" % (i, i, var+'_', i))
 				nonlinear_solve.append("fd.solve(self.forms[%d] == 0, self.form_args[%r], bcs=boundaries[%d])" % (i, var+'_', i))
 			# if users have specified a preconditioner but not an iterative method
 			elif var in self.prm['ksp_type'] and var not in self.prm['precond']:
-				# print('yes1')
 				linear_solve.append("fd.solve(self.a[%d] == self.L[%d], self.form_args[%r], bcs=boundaries[%d], solver_parameters={'ksp_type': self.prm['ksp_type'][%r]})" % (i, i, var+'_', i, var))
 				nonlinear_solve.append("fd.solve(self.forms[%d] == 0, self.form_args[%r], bcs=boundaries[%d], solver_parameters={'ksp_type': self.prm['ksp_type'][%r]})" % (i, var+'_', i, var))
 			# if users have specified an iterative method but not a preconditioner
 			elif var not in self.prm['ksp_type'] and var in self.prm['precond']:
-				# print('yes2')
 				linear_solve.append("fd.solve(self.a[%d] == self.L[%d], self.form_args[%r], bcs=boundaries[%d], solver_parameters={'pc_type': self.prm['precond'][%r]})" % (i, i, var+'_', i, var))
 				nonlinear_solve.append("fd.solve(self.forms[%d] == 0, self.form_args[%r], bcs=boundaries[%d], solver_parameters={'pc_type': self.prm['precond'][%r]})" % (i, var+'_', i, var))
 			# if both are specified
 			else:
-				# print('yes3')
 				linear_solve.append("fd.solve(self.a[%d] == self.L[%d], self.form_args[%r], bcs=boundaries[%d], solver_parameters={'ksp_type': self.prm['ksp_type'][%r], 'pc_type': self.prm['precond'][%r]})" %(i, i, var+'_', i, var, var))
 				nonlinear_solve.append("fd.solve(self.forms[%d] == 0, self.form_args[%r], bcs=boundaries[%d], solver_parameters={'ksp_type': self.prm['ksp_type'][%r], 'pc_type': self.prm['precond'][%r]})" %(i, var+'_', i, var, var))
 
@@ -502,10 +527,9 @@ class PDESystem:
 			# for all subsequent subspaces, instead of adding a new list,
 			# merge together all of the boundary conditions
 			if len(self.V[var]) > 1:
-				for i in range(1, len(self.V[var])):
+				for j in range(1, len(self.V[var])):
 					boundaries[i].extend(self.bc[var][abacus[var]][0])
 					abacus[var]+= 1
-		print(boundaries)
 		tstart = self.tstart
 		tend = self.tend
 		dt = self.dt
@@ -517,7 +541,6 @@ class PDESystem:
 				# repeated variables and boundary conditions
 				abacus = dict.fromkeys(set(self.var_seq), 0)
 				for i, var in enumerate(self.var_seq):
-					# print(var)
 					# first try the linear solve methods
 					try:
 						eval(self.linear_solve[i])
@@ -526,20 +549,16 @@ class PDESystem:
 						eval(self.nonlinear_solve[i])
 					# check if boundary conditions need to be updated
 					for j in range(len(self.V[var])):
-						print(i, j)
-						if self.bc[var][abacus[var] * len(self.V[var]) + j][-1] == 'update':
+						index = abacus[var] * len(self.V[var]) + j
+						if self.bc[var][index][-1] == 'update':
 							# if a MixedFunctionSpace, check to see which subspaces
 							# require a boundary condition and update
 							if len(self.V[var]) > 1 and len(boundaries[i]) > 1:
-								boundaries[i][j] = fd.DirichletBC(self.V[var].sub(self.bc[var][abacus[var]][3]), self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])
+								boundaries[i][j] = fd.DirichletBC(self.V[var].sub(self.bc[var][index][3]), self.bc[var][index][1], self.bc[var][index][2])
 							elif len(self.V[var]) > 1 and len(boundaries[i]) == 1:
-								print(len(boundaries[i]))
-								print(abacus[var])
-								print(var)
-								boundaries[i] = [fd.DirichletBC(self.V[var].sub(self.bc[var][abacus[var]][3]), self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])]
+								boundaries[i] = [fd.DirichletBC(self.V[var].sub(self.bc[var][index][3]), self.bc[var][index][1], self.bc[var][index][2])]
 							else:
-								boundaries[i] = [fd.DirichletBC(self.V[var], self.bc[var][abacus[var]][1], self.bc[var][abacus[var]][2])]
-					print(boundaries)
+								boundaries[i] = [fd.DirichletBC(self.V[var], self.bc[var][index][1], self.bc[var][index][2])]
 					abacus[var] += 1
 				for var in self.var_seq:
 					# assign next timestep variables
@@ -697,8 +716,8 @@ class PDESystem:
 		# index 4 tells the solver which indexed subspace this boundary condition should
 		# be applied to. ex. 0 for the first index of a MixedFunctionSpace
 		for var in var_seq:
-			if self.prm['space'][name] == 'TH':
-				self.bc.update(dict([(var, [[[], None, None, None, None]] * 2)]))
+			if isinstance(self.prm['space'][name], list):
+				self.bc.update(dict([(var, [[[], None, None, None, None]] * len(self.prm['space'][name]))]))
 			else:
 				self.bc.update(dict([(var, [[[], None, None, None, None]] * self.prm['order'][var] * self.var_seq.count(var))]))
 		# initialize the subsystem dictionary with PDESubsystem objects
