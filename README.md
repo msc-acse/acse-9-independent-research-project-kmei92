@@ -38,7 +38,12 @@ from PDESubsystem import *
 from pdeforms import *
 ```
 ## Documentation
-For the latest build of Fireframe documentation, visit [here](https://fireframe.readthedocs.io/en/latest/index.html)
+The Fireframe documentation can be compiled using Sphinx by running
+```bash
+make html
+```
+
+from the `docs` directory. After compiling the documentation, access the html file `index.html` inside the `docs/build/html` directory.
 
 ## Dependencies
 Fireframe relies on the following external libraries:
