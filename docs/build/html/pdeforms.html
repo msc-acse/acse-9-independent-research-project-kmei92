@@ -510,14 +510,56 @@ in the Fireframe project. These forms serve as inspiration and coupling tools fo
 356
 357
 358
-359</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">author : Keer Mei</span>
 <span class="sd">email: keer.mei18@imperial.ac.uk</span>
 <span class="sd">github username: kmei92</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">PDESubsystem</span> <span class="k">import</span> <span class="o">*</span>
-<span class="c1"># from acse.fireframe.PDESubsystem import *</span>
 
 <span class="k">class</span> <span class="nc">navier_stokes</span><span class="p">(</span><span class="n">PDESubsystem</span><span class="p">):</span>
 
@@ -561,7 +603,8 @@ in the Fireframe project. These forms serve as inspiration and coupling tools fo
 
 <span class="k">class</span> <span class="nc">reactions</span><span class="p">(</span><span class="n">PDESubsystem</span><span class="p">):</span>
 
-	<span class="k">def</span> <span class="nf">form1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_1</span><span class="p">,</span> <span class="n">c_n1</span><span class="p">,</span> <span class="n">c_tst1</span><span class="p">,</span> <span class="n">c_2</span><span class="p">,</span> <span class="n">c_n2</span><span class="p">,</span> <span class="n">c_tst2</span><span class="p">,</span> <span class="n">c_3</span><span class="p">,</span> <span class="n">c_n3</span><span class="p">,</span> <span class="n">c_tst3</span><span class="p">,</span> <span class="n">u_</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">deltat</span><span class="p">,</span> <span class="n">f_1</span><span class="p">,</span> <span class="n">f_2</span><span class="p">,</span> <span class="n">f_3</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+	<span class="k">def</span> <span class="nf">form1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_1</span><span class="p">,</span> <span class="n">c_n1</span><span class="p">,</span> <span class="n">c_tst1</span><span class="p">,</span> <span class="n">c_2</span><span class="p">,</span> <span class="n">c_n2</span><span class="p">,</span> <span class="n">c_tst2</span><span class="p">,</span> <span class="n">c_3</span><span class="p">,</span> <span class="n">c_n3</span><span class="p">,</span>
+				<span class="n">c_tst3</span><span class="p">,</span> <span class="n">u_</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">deltat</span><span class="p">,</span> <span class="n">f_1</span><span class="p">,</span> <span class="n">f_2</span><span class="p">,</span> <span class="n">f_3</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 		<span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">		3 componenet first order chemical reactions system in nonlinear form</span>
 <span class="sd">		&quot;&quot;&quot;</span>
@@ -628,7 +671,8 @@ in the Fireframe project. These forms serve as inspiration and coupling tools fo
 	<span class="k">def</span> <span class="nf">form1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_1</span><span class="p">,</span> <span class="n">c_n1</span><span class="p">,</span> <span class="n">c_2</span><span class="p">,</span> <span class="n">c_n2</span><span class="p">,</span> <span class="n">c_3</span><span class="p">,</span> <span class="n">c_n3</span><span class="p">,</span> <span class="n">c_tst1</span><span class="p">,</span> <span class="n">c_tst2</span><span class="p">,</span> <span class="n">c_tst3</span><span class="p">,</span> <span class="n">u_</span><span class="p">,</span>
 			  <span class="n">deltat</span><span class="p">,</span> <span class="n">Kd</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">lamd1</span><span class="p">,</span> <span class="n">lamd2</span><span class="p">,</span> <span class="n">rho_s</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">frac</span><span class="p">,</span> <span class="n">source1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 		<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">		nonlinear system of equations for first radionuclide with half life lamd1. Includes 3 phases: dissolved, suspended, and sediment</span>
+<span class="sd">		nonlinear system of equations for first radionuclide with half life lamd1.</span>
+<span class="sd">		Includes 3 phases: dissolved, suspended, and sediment</span>
 <span class="sd">		&quot;&quot;&quot;</span>
 		<span class="c1"># dissolved phase</span>
 		<span class="n">Form</span> <span class="o">=</span> <span class="p">((</span><span class="n">c_1</span> <span class="o">-</span> <span class="n">c_n1</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
@@ -659,7 +703,8 @@ in the Fireframe project. These forms serve as inspiration and coupling tools fo
 	<span class="k">def</span> <span class="nf">form2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d_1</span><span class="p">,</span> <span class="n">d_n1</span><span class="p">,</span> <span class="n">d_2</span><span class="p">,</span> <span class="n">d_n2</span><span class="p">,</span> <span class="n">d_3</span><span class="p">,</span> <span class="n">d_n3</span><span class="p">,</span> <span class="n">d_tst1</span><span class="p">,</span> <span class="n">d_tst2</span><span class="p">,</span> <span class="n">d_tst3</span><span class="p">,</span> <span class="n">c_n1</span><span class="p">,</span> <span class="n">c_n2</span><span class="p">,</span>
 				<span class="n">u_</span><span class="p">,</span> <span class="n">c_n3</span><span class="p">,</span> <span class="n">deltat</span><span class="p">,</span> <span class="n">Kd</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">lamd1</span><span class="p">,</span> <span class="n">lamd2</span><span class="p">,</span> <span class="n">rho_s</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">frac</span><span class="p">,</span> <span class="n">source1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 		<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">		nonlinear system of equations for second radionuclide with half life lamd2. Includes 3 phases: dissolved, suspended, and sediment</span>
+<span class="sd">		nonlinear system of equations for second radionuclide with half life lamd2.</span>
+<span class="sd">		Includes 3 phases: dissolved, suspended, and sediment</span>
 <span class="sd">		&quot;&quot;&quot;</span>
 		<span class="c1"># dissolved phase</span>
 		<span class="n">Form</span> <span class="o">=</span> <span class="p">((</span><span class="n">d_1</span> <span class="o">-</span> <span class="n">d_n1</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
@@ -695,7 +740,8 @@ in the Fireframe project. These forms serve as inspiration and coupling tools fo
 			  <span class="n">deltat</span><span class="p">,</span> <span class="n">Kd</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">lamd1</span><span class="p">,</span> <span class="n">lamd2</span><span class="p">,</span> <span class="n">rho_s</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">frac</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 
 		<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">		manufactured equation for nonlinear system of equations for first radionuclide with half life lamd1. Includes 3 phases: dissolved, suspended, and sediment. Includes an extra source term.</span>
+<span class="sd">		manufactured equation for nonlinear system of equations for first radionuclide with half life lamd1.</span>
+<span class="sd">		Includes 3 phases: dissolved, suspended, and sediment. Includes an extra source term.</span>
 <span class="sd">		&quot;&quot;&quot;</span>
 		<span class="c1"># manufactured source term</span>
 		<span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">SpatialCoordinate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
@@ -735,7 +781,8 @@ in the Fireframe project. These forms serve as inspiration and coupling tools fo
 	<span class="k">def</span> <span class="nf">form2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d_1</span><span class="p">,</span> <span class="n">d_n1</span><span class="p">,</span> <span class="n">d_2</span><span class="p">,</span> <span class="n">d_n2</span><span class="p">,</span> <span class="n">d_3</span><span class="p">,</span> <span class="n">d_n3</span><span class="p">,</span> <span class="n">d_tst1</span><span class="p">,</span> <span class="n">d_tst2</span><span class="p">,</span> <span class="n">d_tst3</span><span class="p">,</span> <span class="n">c_n1</span><span class="p">,</span> <span class="n">c_n2</span><span class="p">,</span>
 				<span class="n">u_</span><span class="p">,</span> <span class="n">c_n3</span><span class="p">,</span> <span class="n">deltat</span><span class="p">,</span> <span class="n">Kd</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">lamd1</span><span class="p">,</span> <span class="n">lamd2</span><span class="p">,</span> <span class="n">rho_s</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">frac</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 		<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">		manufactured equation for nonlinear system of equations for second radionuclide with half life lamd2. Includes 3 phases: dissolved, suspended, and sediment. No source term.</span>
+<span class="sd">		manufactured equation for nonlinear system of equations for second radionuclide with half life lamd2.</span>
+<span class="sd">		Includes 3 phases: dissolved, suspended, and sediment. No source term.</span>
 <span class="sd">		&quot;&quot;&quot;</span>
 		<span class="c1"># dissolved phase</span>
 		<span class="n">Form</span> <span class="o">=</span> <span class="p">((</span><span class="n">d_1</span> <span class="o">-</span> <span class="n">d_n1</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
@@ -782,25 +829,58 @@ in the Fireframe project. These forms serve as inspiration and coupling tools fo
 	<span class="k">def</span> <span class="nf">form1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="n">z_trl1</span><span class="p">,</span> <span class="n">z_n1</span><span class="p">,</span> <span class="n">z_trl2</span><span class="p">,</span> <span class="n">z_n2</span><span class="p">,</span> <span class="n">z_tst1</span><span class="p">,</span> <span class="n">z_tst2</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">deltat</span><span class="p">,</span> <span class="n">boundary_marker</span><span class="p">,</span>
 	 			<span class="n">boundary_marker2</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 		<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">		Shallow water hydrodynamic equation</span>
+<span class="sd">		Shallow water hydrodynamic equation with no normal boundary conditions.</span>
+<span class="sd">		boundary_marker1 is the inlet.</span>
 <span class="sd">		&quot;&quot;&quot;</span>
 		<span class="c1"># mid point rule</span>
 		<span class="n">u_mid</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">z_trl1</span> <span class="o">+</span> <span class="n">z_n1</span><span class="p">)</span>
 		<span class="n">h_mid</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">z_trl2</span> <span class="o">+</span> <span class="n">z_n2</span><span class="p">)</span>
 		<span class="n">magnitude</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z_n1</span><span class="p">,</span> <span class="n">z_n1</span><span class="p">))</span>
+		<span class="n">H</span> <span class="o">=</span> <span class="n">D</span> <span class="o">+</span> <span class="n">z_n2</span>
 
 		<span class="c1"># Continuity equation</span>
 		<span class="n">Form</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">z_trl2</span> <span class="o">-</span> <span class="n">z_n2</span><span class="p">,</span> <span class="n">z_tst2</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">-</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">D</span> <span class="o">*</span> <span class="n">u_mid</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">z_tst2</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">H</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">u_mid</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">z_tst2</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
 		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">u_mid</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span><span class="o">*</span><span class="n">z_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">ds</span><span class="p">(</span><span class="n">boundary_marker</span><span class="p">)</span> \
+		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">u_mid</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span><span class="o">*</span><span class="n">z_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">ds</span><span class="p">(</span><span class="n">boundary_marker2</span><span class="p">)</span>
+		<span class="c1"># Momentum equation</span>
+		<span class="n">Form</span> <span class="o">+=</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">z_trl1</span> <span class="o">-</span> <span class="n">z_n1</span><span class="p">,</span> <span class="n">z_tst1</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">u_mid</span><span class="p">),</span> <span class="n">z_n1</span><span class="p">),</span> <span class="n">z_tst1</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">g</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">h_mid</span><span class="p">),</span> <span class="n">z_tst1</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">A</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">u_mid</span><span class="p">)</span><span class="o">+</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">u_mid</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">z_tst1</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">A</span><span class="o">*</span><span class="p">(</span><span class="mf">2.</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">u_mid</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">Identity</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">u_mid</span><span class="p">)),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">z_tst1</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z_tst1</span><span class="p">,</span> <span class="n">tau</span><span class="o">*</span><span class="n">magnitude</span><span class="o">/</span><span class="p">(</span><span class="n">H</span><span class="p">)</span><span class="o">*</span><span class="n">u_mid</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
+
+		<span class="k">return</span> <span class="n">Form</span>
+
+<span class="k">class</span> <span class="nc">depth_avg_hydro_flather</span><span class="p">(</span><span class="n">PDESubsystem</span><span class="p">):</span>
+
+	<span class="k">def</span> <span class="nf">form1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="n">z_trl1</span><span class="p">,</span> <span class="n">z_n1</span><span class="p">,</span> <span class="n">z_trl2</span><span class="p">,</span> <span class="n">z_n2</span><span class="p">,</span> <span class="n">z_tst1</span><span class="p">,</span> <span class="n">z_tst2</span><span class="p">,</span> <span class="n">D</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">deltat</span><span class="p">,</span> <span class="n">boundary_marker</span><span class="p">,</span>
+	 			<span class="n">boundary_marker2</span><span class="p">,</span> <span class="n">u_ext</span><span class="p">,</span> <span class="n">h_ext</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Shallow water hydrodynamic equation with Flather boundary conditions.</span>
+<span class="sd">		bounadry_marker is the inlet and boundary_marker2 is the outlet.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="c1"># mid point rule</span>
+		<span class="n">u_mid</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">z_trl1</span> <span class="o">+</span> <span class="n">z_n1</span><span class="p">)</span>
+		<span class="n">h_mid</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">z_trl2</span> <span class="o">+</span> <span class="n">z_n2</span><span class="p">)</span>
+		<span class="n">magnitude</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z_n1</span><span class="p">,</span> <span class="n">z_n1</span><span class="p">))</span>
+		<span class="n">H</span> <span class="o">=</span> <span class="n">D</span> <span class="o">+</span> <span class="n">z_n2</span>
+
+		<span class="c1"># Continuity equation</span>
+		<span class="n">Form</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">z_trl2</span> <span class="o">-</span> <span class="n">z_n2</span><span class="p">,</span> <span class="n">z_tst2</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">H</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">u_mid</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">z_tst2</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">u_mid</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span><span class="o">*</span><span class="n">z_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">ds</span><span class="p">(</span><span class="n">boundary_marker</span><span class="p">)</span> \
+		<span class="o">+</span> <span class="n">H</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">g</span><span class="o">/</span><span class="n">H</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">h_mid</span> <span class="o">-</span> <span class="n">h_ext</span><span class="p">)</span><span class="o">*</span><span class="n">z_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">ds</span><span class="p">(</span><span class="n">boundary_marker2</span><span class="p">)</span> \
+		<span class="o">+</span> <span class="n">H</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u_ext</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">z_tst2</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">ds</span><span class="p">(</span><span class="n">boundary_marker2</span><span class="p">)</span>
 
 		<span class="c1"># Momentum equation</span>
 		<span class="n">Form</span> <span class="o">+=</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">z_trl1</span> <span class="o">-</span> <span class="n">z_n1</span><span class="p">,</span> <span class="n">z_tst1</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">u_mid</span><span class="p">),</span> <span class="n">z_n1</span><span class="p">),</span> <span class="n">z_tst1</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
 		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">g</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">h_mid</span><span class="p">),</span> <span class="n">z_tst1</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">g</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z_tst1</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">h_mid</span> <span class="o">-</span> <span class="mf">0.0</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">ds</span><span class="p">(</span><span class="n">boundary_marker</span><span class="p">)</span> \
 		<span class="o">+</span> <span class="n">A</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">u_mid</span><span class="p">)</span><span class="o">+</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">u_mid</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">z_tst1</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z_tst1</span><span class="p">,</span> <span class="n">tau</span><span class="o">*</span><span class="n">magnitude</span><span class="o">/</span><span class="p">(</span><span class="n">D</span><span class="p">)</span><span class="o">*</span><span class="n">u_mid</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">-</span> <span class="n">A</span><span class="o">*</span><span class="p">(</span><span class="mf">2.</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">u_mid</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">Identity</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">u_mid</span><span class="p">)),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">z_tst1</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
+		<span class="o">-</span> <span class="n">A</span><span class="o">*</span><span class="p">(</span><span class="mf">2.</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">u_mid</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">Identity</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">u_mid</span><span class="p">)),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">z_tst1</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z_tst1</span><span class="p">,</span> <span class="n">tau</span><span class="o">*</span><span class="n">magnitude</span><span class="o">/</span><span class="p">(</span><span class="n">H</span><span class="p">)</span><span class="o">*</span><span class="n">u_mid</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
 
 		<span class="k">return</span> <span class="n">Form</span>
 
@@ -809,7 +889,10 @@ in the Fireframe project. These forms serve as inspiration and coupling tools fo
 	<span class="k">def</span> <span class="nf">form1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_1</span><span class="p">,</span> <span class="n">c_n1</span><span class="p">,</span> <span class="n">c_2</span><span class="p">,</span> <span class="n">c_n2</span><span class="p">,</span> <span class="n">c_3</span><span class="p">,</span> <span class="n">c_n3</span><span class="p">,</span> <span class="n">c_tst1</span><span class="p">,</span> <span class="n">c_tst2</span><span class="p">,</span> <span class="n">c_tst3</span><span class="p">,</span> <span class="n">z_1</span><span class="p">,</span>
 			  <span class="n">deltat</span><span class="p">,</span> <span class="n">Kd</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">lamd1</span><span class="p">,</span> <span class="n">lamd2</span><span class="p">,</span> <span class="n">rho_s</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">frac</span><span class="p">,</span> <span class="n">source1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 		<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">		nonlinear system of equations for first radionuclide with half life lamd1. Includes 3 phases: dissolved, suspended, and sediment</span>
+<span class="sd">		nonlinear system of equations for first radionuclide with half life lamd1.</span>
+<span class="sd">		Includes 3 phases: dissolved, suspended, and sediment. The velocity term</span>
+<span class="sd">		is changed from u_ to z_1 as it uses the mixedfunctionspace velocity</span>
+<span class="sd">		from the shallow water equation. Everything else is kept same.</span>
 <span class="sd">		&quot;&quot;&quot;</span>
 		<span class="c1"># dissolved phase</span>
 		<span class="n">Form</span> <span class="o">=</span> <span class="p">((</span><span class="n">c_1</span> <span class="o">-</span> <span class="n">c_n1</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
@@ -840,7 +923,10 @@ in the Fireframe project. These forms serve as inspiration and coupling tools fo
 	<span class="k">def</span> <span class="nf">form2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d_1</span><span class="p">,</span> <span class="n">d_n1</span><span class="p">,</span> <span class="n">d_2</span><span class="p">,</span> <span class="n">d_n2</span><span class="p">,</span> <span class="n">d_3</span><span class="p">,</span> <span class="n">d_n3</span><span class="p">,</span> <span class="n">d_tst1</span><span class="p">,</span> <span class="n">d_tst2</span><span class="p">,</span> <span class="n">d_tst3</span><span class="p">,</span> <span class="n">c_n1</span><span class="p">,</span> <span class="n">c_n2</span><span class="p">,</span>
 				<span class="n">z_1</span><span class="p">,</span> <span class="n">c_n3</span><span class="p">,</span> <span class="n">deltat</span><span class="p">,</span> <span class="n">Kd</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">lamd1</span><span class="p">,</span> <span class="n">lamd2</span><span class="p">,</span> <span class="n">rho_s</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">frac</span><span class="p">,</span> <span class="n">source1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 		<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">		nonlinear system of equations for second radionuclide with half life lamd2. Includes 3 phases: dissolved, suspended, and sediment</span>
+<span class="sd">		nonlinear system of equations for second radionuclide with half life lamd2.</span>
+<span class="sd">		Includes 3 phases: dissolved, suspended, and sediment. The velocity term</span>
+<span class="sd">		is changed from u_ to z_1 as it uses the mixedfunctionspace velocity</span>
+<span class="sd">		from the shallow water equation. Everything else is kept same.</span>
 <span class="sd">		&quot;&quot;&quot;</span>
 		<span class="c1"># dissolved phase</span>
 		<span class="n">Form</span> <span class="o">=</span> <span class="p">((</span><span class="n">d_1</span> <span class="o">-</span> <span class="n">d_n1</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \

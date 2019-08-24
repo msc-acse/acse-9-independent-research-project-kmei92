@@ -389,7 +389,7 @@ class PDESystem:
 		This function updates self.form_args dictionary when a new subsystem
 		is added to the PDESystem.
 
-		:params order:. A dictionary with keys of variable names and values of integers. i.e. {'c' : 3}
+		:params order: A dictionary with keys of variable names and values of integers. i.e. {'c' : 3}
 		:type order: `dictionary`
 
 		:returns self.form_args: A dictionary with keys of variable names + suffix '_trl' and Firedrake TrialFunction or TrialFunctions objects. i.e. {'u_': fd.Function, 'u_n': fd.Function, 'u_trl':fd.TrialFunction, 'u_tst' : fd.TestFunction}
