@@ -52,7 +52,7 @@ Fireframe relies on the following external libraries:
  - sympy >= 1.4
  - matplotlib >= 3.1.0
  - jupyter >= 1.0.0 (to run demo notebooks)
-
+ - Sphinx >= 1.8.5 (to compile documentation)
 ## Repository Information
 * __docs__				- all files required to compile the documentation for fireframe
 * __tests__				- pytest file to check whether core functionality of PDESystem, PDESubsystem, and pdeforms are intact
