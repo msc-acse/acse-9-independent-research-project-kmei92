@@ -11,6 +11,8 @@ Welcome to Fireframe's documentation!
    
    introduction
    pdesystem
+   pdesubsystem
+   pdeforms
 
 
 Indices and tables

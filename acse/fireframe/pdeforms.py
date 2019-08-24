@@ -5,7 +5,6 @@ github username: kmei92
 """
 
 from PDESubsystem import *
-# from acse.fireframe.PDESubsystem import *
 
 class navier_stokes(PDESubsystem):
 
