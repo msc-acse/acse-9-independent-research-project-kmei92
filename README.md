@@ -62,7 +62,7 @@ __Github:__ kmei92
 __CID:__ 01545321
 
 This project is completed for Imperial College's MSc in Applied Computational Science and Engineering program,
-as part of the final course module ACSE9. This project was completed under and supervision of Professor Matthew Piggott. 
+as part of the final course module ACSE9. This project was completed under the supervision of Professor Matthew Piggott. 
 ## License
 Fireframe is licensed under the MIT [license](https://github.com/msc-acse/acse-9-independent-research-project-kmei92/blob/master/LICENSE)
 
