@@ -1,0 +1,1160 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="Python" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="Python" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>fireframe.PDESystem &mdash; Fireframe 0.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Fireframe
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pdesystem.html">PDESystem Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pdesubsystem.html">PDESubsystem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../pdeforms.html">The pdeforms</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Fireframe</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>fireframe.PDESystem</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for fireframe.PDESystem</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">author : Keer Mei</span>
+<span class="sd">email: keer.mei18@imperial.ac.uk</span>
+<span class="sd">github username: kmei92</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">defaultdict</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">firedrake</span> <span class="k">as</span> <span class="nn">fd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">sympy</span> <span class="k">as</span> <span class="nn">sy</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">The default_solver_parameters is a dictionary adapted from Mikael Mortensen on July, 2019.</span>
+<span class="sd">Source code can be found here:</span>
+<span class="sd">https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">default_solver_parameters</span> <span class="o">=</span> <span class="p">{</span>
+	<span class="s1">&#39;degree&#39;</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="mi">1</span><span class="p">),</span> <span class="c1"># default function space dimension</span>
+	<span class="s1">&#39;family&#39;</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="s1">&#39;CG&#39;</span><span class="p">),</span> <span class="c1"># default trial/test functions</span>
+	<span class="s1">&#39;ksp_type&#39;</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="c1"># specifies iterative method for solving matrices</span>
+	<span class="s1">&#39;precond&#39;</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="c1"># specifies matrix preconditioners</span>
+	<span class="s1">&#39;order&#39;</span> <span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="mi">1</span><span class="p">),</span> <span class="c1"># default order of function spaces</span>
+	<span class="s1">&#39;space&#39;</span> <span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">fd</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">),</span> <span class="c1"># default functionspace</span>
+	<span class="s1">&#39;T&#39;</span><span class="p">:</span> <span class="mf">10.</span><span class="p">,</span> <span class="c1"># End time for simulation,</span>
+	<span class="s1">&#39;dt&#39;</span><span class="p">:</span> <span class="mf">0.001</span>  <span class="c1"># timestep,</span>
+<span class="p">}</span>
+
+<span class="n">solver_parameters</span>  <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">default_solver_parameters</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="recursive_update"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.recursive_update">[docs]</a><span class="k">def</span> <span class="nf">recursive_update</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">src</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	This function was obtained from Mikael Mortensen on July, 2019.</span>
+<span class="sd">	Source code can be found here:</span>
+<span class="sd">	https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</span>
+
+<span class="sd">	Description:</span>
+<span class="sd">	Update dict dst with items from src deeply (&quot;deep update&quot;).</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+		<span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">dst</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dst</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+			<span class="n">dst</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">recursive_update</span><span class="p">(</span><span class="n">dst</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">val</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">dst</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+	<span class="k">return</span> <span class="n">dst</span></div>
+
+<div class="viewcode-block" id="PDESystem"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem">[docs]</a><span class="k">class</span> <span class="nc">PDESystem</span><span class="p">:</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	This class was adapted from Mikael Mortensen on July, 2019.</span>
+<span class="sd">	Source code can be found here:</span>
+<span class="sd">	https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</span>
+
+<span class="sd">	Description:</span>
+<span class="sd">	The PDESystem class represents a complete set of Partial Differential Equations.</span>
+<span class="sd">	A PDESystem can include a single set of PDEs, for example the Chorin projection</span>
+<span class="sd">	scheme for the navier-stokes equation. Or, the PDESystem can contain a coupled</span>
+<span class="sd">	set of PDEs, for example a radionuclide problem coupled with the Chorin projection</span>
+<span class="sd">	equations.</span>
+
+<span class="sd">	:param system_composition: a list of list. i.e. [[&#39;u&#39;, &#39;p&#39;]] for navier-stokes</span>
+<span class="sd">	:type system_composition: `list` of `list`</span>
+<span class="sd">	Example:</span>
+<span class="sd">		[[&#39;u&#39;, &#39;p&#39;]] a system with two variables, u and p.</span>
+<span class="sd">		[[&#39;up&#39;]] a system with one variable, up. Most likely a MixedFunctionSpace.</span>
+<span class="sd">		[[&#39;u&#39;], [&#39;p&#39;]] two coupled systems with single variable.</span>
+
+
+<span class="sd">	:param mesh: a firedrake mesh object</span>
+<span class="sd">	:type mesh: `fd.Mesh object`</span>
+
+<span class="sd">	:param parameters: see default_sovler_parameters</span>
+<span class="sd">	:type parameters: `dictionary` of `dictionary`</span>
+
+<span class="sd">	:attribute names: a list of variables. i.e. [&#39;u&#39;, &#39;p&#39;]</span>
+<span class="sd">	:attribute system_names: a list of system names. i.e. [&#39;up&#39;, &#39;cdcsas&#39;]</span>
+<span class="sd">	:attribute subsystem: a dictionary of available subclasses. key = system_name, value = PDESubsystem object. i.e. subsystem[&#39;up&#39;] = navier_stokes</span>
+<span class="sd">	:attribute constants: a dictionary of constants. To be passed together with form_args. used in the forms of PDESubsystem objects.</span>
+<span class="sd">	:attribute tstart: (int or float) default 0. Start time of problem</span>
+<span class="sd">	:attribute t: firedrake Constant object. Time variable of the problem</span>
+<span class="sd">	:attribute tend: (int or float) parameters[&#39;T&#39;] value. End time of problem</span>
+<span class="sd">	:attribute dt: (int or float) parameters[&#39;dt&#39;]. Time step value of problem</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_composition</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">system_composition</span> <span class="o">=</span> <span class="n">system_composition</span>   	<span class="c1">#ex. [[&#39;u&#39;, &#39;p&#39;]]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">system_names</span> <span class="o">=</span> <span class="p">[]</span>                         	<span class="c1">#ex. [&#39;up&#39;, &#39;c&#39;]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>                                	<span class="c1">#ex. [&#39;u&#39;, &#39;p&#39;, &#39;c&#39;]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span>								<span class="c1">#fd.Mesh object</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">prm</span> <span class="o">=</span> <span class="n">parameters</span>							<span class="c1">#solver or default_solver_parameters</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">constants</span> <span class="o">=</span> <span class="p">{}</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">tstart</span> <span class="o">=</span> <span class="mi">0</span>                                 <span class="c1"># start time</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tstart</span><span class="p">)</span>				<span class="c1"># create a time variable</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">tend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]</span>                       <span class="c1"># simulation end time</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;dt&#39;</span><span class="p">]</span>                        <span class="c1"># time step</span>
+
+		<span class="c1"># initialize an empty dictionary to keep track of PDESubsystems</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">pdesubsystems</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_names</span><span class="p">)</span>
+		<span class="c1"># initialize empty boundary conditions</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">bc</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">var_seq</span> <span class="o">=</span> <span class="p">[]</span>								<span class="c1">#ex. [&#39;u&#39;, &#39;p&#39;, &#39;c&#39;]</span>
+
+		<span class="c1"># creates function spaces, trial, test, and functions</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">setup_system</span><span class="p">()</span>
+
+<div class="viewcode-block" id="PDESystem.setup_system"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem.setup_system">[docs]</a>	<span class="k">def</span> <span class="nf">setup_system</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		This function was adapted from Mikael Mortensen on July, 2019.</span>
+<span class="sd">		Source code can be found here:</span>
+<span class="sd">		https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</span>
+
+<span class="sd">		Description:</span>
+<span class="sd">		This function calls on other member functions of the PDESystem class to set up function spaces,</span>
+<span class="sd">		the subsystems (depending on how many coupled systems of PDEs there are) and creates the form_args</span>
+<span class="sd">		(the form_args are the variables that the PDESystem will solve for)</span>
+
+<span class="sd">		:returns self.names: a list of variables</span>
+<span class="sd">		:rtype: `list`</span>
+
+<span class="sd">		:returns self.system_names: a list of system variables</span>
+<span class="sd">		:rtype: `list`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="c1"># keep track of each subsystem</span>
+		<span class="k">for</span> <span class="n">sub_system</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_composition</span><span class="p">:</span>
+			<span class="c1"># create a system name from all variables in subsystem</span>
+			<span class="n">system_name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sub_system</span><span class="p">)</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">system_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">system_name</span><span class="p">)</span>
+			<span class="c1"># track individual, UNIQUE names into self.names list</span>
+			<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">sub_system</span><span class="p">:</span>       <span class="c1"># Run over all individual components</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+		<span class="c1"># create function spaces</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">setup_function_spaces</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;degree&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;space&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;family&#39;</span><span class="p">])</span> <span class="c1"># removed cons</span>
+		<span class="c1"># create trial and test functions</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">setup_trial_test</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;space&#39;</span><span class="p">])</span>
+		<span class="c1"># create arguments to be passed into PDESubsystems</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">setup_form_args</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;space&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="PDESystem.setup_function_spaces"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem.setup_function_spaces">[docs]</a>	<span class="k">def</span> <span class="nf">setup_function_spaces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span> <span class="n">space</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">family</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		This function was adapted from Mikael Mortensen on July, 2019.</span>
+<span class="sd">		Source code can be found here:</span>
+<span class="sd">		https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</span>
+
+<span class="sd">		Description:</span>
+<span class="sd">		This function creates function spaces for each of the subsystems</span>
+<span class="sd">		There is a check on whether the subsystem contains a MixedFunctionSpace</span>
+
+<span class="sd">		:params mesh: A Firedrake mesh object</span>
+<span class="sd">		:type mesh: `fd.Mesh object`0</span>
+
+<span class="sd">		:params degree: A dictionary with keys of variable names and values of integers. i.e. {&#39;u&#39; : 1, &#39;p&#39; : 1}</span>
+<span class="sd">		:type degree: `dictionary`</span>
+
+<span class="sd">		:params space: A dictionary with keys of variable names and values of firedrake function space methods. i.e. {&#39;u&#39; : fd.VectorFunctionSpace}</span>
+<span class="sd">		:type space: `dictionary`</span>
+
+<span class="sd">		:params order: A dictionary with keys of variable names and values of integers. i.e. {&#39;u&#39; : 1, &#39;p&#39; : 1}</span>
+<span class="sd">		:type order: `dictionary`</span>
+
+<span class="sd">		:params family: A dictionary with keys of variable names and values of Firedrake finite element familys. i.e. {&#39;u&#39; : &#39;DG&#39;, &#39;p&#39; : &#39;CG&#39;}</span>
+<span class="sd">		:type family: `dictionary`</span>
+
+<span class="sd">		:returns self.V: A dictionary with keys of variable names and values of Firedrake function space objects. i.e. {&#39;u&#39;: fd.VectorFunctionSpace, &#39;p&#39;: fd.FunctionSpace, &#39;cd&#39; : fd.MixedFunctionSpace}</span>
+<span class="sd">		:rtype self.V: `dictionary`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="c1"># empty dictionary</span>
+		<span class="n">V</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="c1"># for each variable</span>
+		<span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+			<span class="c1"># order &gt; 1 should be MixedFunctionSpace of generic function spaces</span>
+			<span class="k">if</span> <span class="n">order</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+				<span class="c1"># create individual fd.FunctionSpaces multipled by total order#</span>
+				<span class="n">total_space</span> <span class="o">=</span> <span class="p">[]</span>
+				<span class="n">single_space</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+				<span class="n">total_space</span> <span class="o">=</span> <span class="p">[</span><span class="n">single_space</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">order</span><span class="p">[</span><span class="n">name</span><span class="p">])]</span>
+				<span class="n">V</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">([(</span><span class="n">name</span><span class="p">,</span> <span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="n">total_space</span><span class="p">))]))</span>
+			<span class="c1"># special scenario for user specified MixedLists</span>
+			<span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span> <span class="p">:</span>
+				<span class="n">total_space</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+				<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+					<span class="c1"># check that the user has input a correct list</span>
+					<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+					<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+					<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])):</span>
+						<span class="n">total_space</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">](</span><span class="n">mesh</span><span class="p">,</span> <span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+				<span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+					<span class="c1"># check that the user has input a correct list</span>
+					<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+					<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])):</span>
+						<span class="n">total_space</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">](</span><span class="n">mesh</span><span class="p">,</span> <span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+				<span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+					<span class="c1"># check that the user has input a correct list</span>
+					<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+					<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])):</span>
+						<span class="n">total_space</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">](</span><span class="n">mesh</span><span class="p">,</span> <span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+				<span class="n">V</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">([(</span><span class="n">name</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">MixedFunctionSpace</span><span class="p">(</span><span class="n">total_space</span><span class="p">))]))</span>
+			<span class="c1"># use the parameters[&#39;space&#39;] value to determine type of function space</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">V</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">([(</span><span class="n">name</span><span class="p">,</span> <span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="n">mesh</span><span class="p">,</span> <span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">]))]))</span>
+		<span class="c1"># initialize new attribute self.V to track all created function spaces</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">=</span> <span class="n">V</span></div>
+
+<div class="viewcode-block" id="PDESystem.update_function_spaces"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem.update_function_spaces">[docs]</a>	<span class="k">def</span> <span class="nf">update_function_spaces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name_list</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">degree</span><span class="p">,</span> <span class="n">space</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">family</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Description:</span>
+<span class="sd">		This function updates function spaces when a new subsystem is added to</span>
+<span class="sd">		the PDESystem.</span>
+<span class="sd">		There is a check on whether the subsystem contains a MixedFunctionSpace</span>
+
+<span class="sd">		:params mesh: A Firedrake mesh object</span>
+<span class="sd">		:type mesh: `fd.Mesh object`</span>
+
+<span class="sd">		:params degree: A dictionary with keys of variable names and values of integers. i.e. {&#39;u&#39; : 1, &#39;p&#39; : 1}</span>
+<span class="sd">		:type degree: `dictionary`</span>
+
+<span class="sd">		:params space: A dictionary with keys of variable names and values of firedrake function space methods. i.e. {&#39;u&#39; : fd.VectorFunctionSpace}</span>
+<span class="sd">		:type space: `dictionary`</span>
+
+<span class="sd">		:params order: A dictionary with keys of variable names and values of integers. i.e. {&#39;u&#39; : 1, &#39;p&#39; : 1}</span>
+<span class="sd">		:type order: `dictionary`</span>
+
+<span class="sd">		:params family: A dictionary with keys of variable names and values of Firedrake finite element familys. i.e. {&#39;u&#39; : &#39;DG&#39;, &#39;p&#39; : &#39;CG&#39;}</span>
+<span class="sd">		:type family: `dictionary`</span>
+
+<span class="sd">		:returns self.V: A dictionary with keys of variable names and values of Firedrake function space objects. i.e. {&#39;u&#39;: fd.VectorFunctionSpace, &#39;p&#39;: fd.FunctionSpace, &#39;cd&#39; : fd.MixedFunctionSpace}</span>
+<span class="sd">		:rtype self.V: `dictionary`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="c1"># for each variable in new system</span>
+		<span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">name_list</span><span class="p">:</span>
+			<span class="c1"># order &gt; 1 should be MixedFunctionSpace</span>
+			<span class="k">if</span> <span class="n">order</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+				<span class="c1"># create individual fd.FunctionSpaces multipled by total order#</span>
+				<span class="n">total_space</span> <span class="o">=</span> <span class="p">[]</span>
+				<span class="n">single_space</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+				<span class="n">total_space</span> <span class="o">=</span> <span class="p">[</span><span class="n">single_space</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">order</span><span class="p">[</span><span class="n">name</span><span class="p">])]</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">([(</span><span class="n">name</span><span class="p">,</span> <span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="n">total_space</span><span class="p">))]))</span>
+			<span class="c1"># special scenario for MixedLists</span>
+			<span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+				<span class="n">total_space</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+				<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+					<span class="c1"># check that the user has input a correct list</span>
+					<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+					<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+					<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])):</span>
+						<span class="n">total_space</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">](</span><span class="n">mesh</span><span class="p">,</span> <span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+				<span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+					<span class="c1"># check that the user has input a correct list</span>
+					<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+					<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])):</span>
+						<span class="n">total_space</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">](</span><span class="n">mesh</span><span class="p">,</span> <span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+				<span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+					<span class="c1"># check that the user has input a correct list</span>
+					<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+					<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])):</span>
+						<span class="n">total_space</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">](</span><span class="n">mesh</span><span class="p">,</span> <span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">([(</span><span class="n">name</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">MixedFunctionSpace</span><span class="p">(</span><span class="n">total_space</span><span class="p">))]))</span>
+			<span class="c1"># use the parameters[&#39;space&#39;] value to determine type of function space</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">([(</span><span class="n">name</span><span class="p">,</span> <span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="n">mesh</span><span class="p">,</span> <span class="n">family</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">degree</span><span class="p">[</span><span class="n">name</span><span class="p">]))]))</span></div>
+
+<div class="viewcode-block" id="PDESystem.setup_trial_test"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem.setup_trial_test">[docs]</a>	<span class="k">def</span> <span class="nf">setup_trial_test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">space</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		This function was adapted from Mikael Mortensen on July, 2019.</span>
+<span class="sd">		Source code can be found here:</span>
+<span class="sd">		https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</span>
+
+<span class="sd">		Description:</span>
+<span class="sd">		This function creates all of the trial and test functions to be used the the in the</span>
+<span class="sd">		variational form. It is dependent on the variable names given to the PDESystem</span>
+
+<span class="sd">		:params order: A dictionary with keys of variable names and values of integers. i.e. {&#39;c&#39; : 3}</span>
+<span class="sd">		:type order: `dictionary`</span>
+
+<span class="sd">		:returns self.qt: A dictionary with keys of variable names + suffix &#39;_trl&#39; and Firedrake TrialFunction or TrialFunctions objects. i.e. {&#39;u_trl&#39;, fd.TrialFunction}</span>
+<span class="sd">		:rtype self.qt: `dictionary`</span>
+
+<span class="sd">		:returns self.vt: A dictionary with keys of variable names + suffix &#39;_tst&#39; and Firedrake TestFunction or TestFunctions objects. i.e. {&#39;u_trl&#39;, fd.TestFunction}</span>
+<span class="sd">		:rtype self.vt: `dictionary`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">V</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span>
+		<span class="c1"># initialize two new dictionarys to track trial and test functions</span>
+		<span class="n">q</span> <span class="o">=</span> <span class="p">{}</span>
+		<span class="n">v</span> <span class="o">=</span> <span class="p">{}</span>
+
+		<span class="c1"># for each variable</span>
+		<span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+			<span class="c1"># if MixedFunctionSpace use indexing to extract subcomponents</span>
+			<span class="k">if</span> <span class="n">order</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+				<span class="n">q</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_trl</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">TrialFunctions</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">])[</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+				<span class="n">v</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_tst</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">TestFunctions</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">])[</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+			<span class="c1"># if special MixedLists</span>
+			<span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+				<span class="n">q</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_trl</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">TrialFunctions</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">])[</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+				<span class="n">v</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_tst</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">TestFunctions</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">])[</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+			<span class="c1"># create Trial and Test</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">q</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">[</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_trl&#39;</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">TrialFunction</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span> <span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
+				<span class="n">v</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">[</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_tst&#39;</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">TestFunction</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span> <span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
+		<span class="c1"># create new attribute self.qt and self.vt for trial and test functions</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">qt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vt</span> <span class="o">=</span> <span class="n">q</span><span class="p">,</span> <span class="n">v</span></div>
+
+<div class="viewcode-block" id="PDESystem.update_trial_test"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem.update_trial_test">[docs]</a>	<span class="k">def</span> <span class="nf">update_trial_test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name_list</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">space</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Description:</span>
+<span class="sd">		This function updates self.qt and self.vt when a new subsystem is added.</span>
+<span class="sd">		It is dependent on the variable names given to the PDESystem.</span>
+
+<span class="sd">		:params name_list: A list of variables. i.e. [&#39;cd&#39;, &#39;cs&#39;, &#39;as&#39;]</span>
+<span class="sd">		:type name_list: `list`</span>
+
+<span class="sd">		:params order: A dictionary with keys of variable names and values of integers. i.e. {&#39;c&#39; : 3}</span>
+<span class="sd">		:type order: `dictionary`</span>
+
+<span class="sd">		:returns self.qt: A dictionary with keys of variable names + suffix &#39;_trl&#39; and Firedrake TrialFunction or TrialFunctions objects. i.e. {&#39;u_trl&#39;, fd.TrialFunction}</span>
+<span class="sd">		:rtype self.qt: `dictionary`</span>
+
+<span class="sd">		:returns self.vt: A dictionary with keys of variable names + suffix &#39;_tst&#39; and Firedrake TestFunction or TestFunctions objects. i.e. {&#39;u_trl&#39;, fd.TestFunction}</span>
+<span class="sd">		:rtype self.vt: `dictionary`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+
+		<span class="n">V</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span>
+		<span class="c1"># for each new variable</span>
+		<span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">name_list</span><span class="p">:</span>
+			<span class="c1"># if MixedFunctionSpace use indexing to extract subcomponents</span>
+			<span class="k">if</span> <span class="n">order</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">qt</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_trl</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">TrialFunctions</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">])[</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">vt</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_tst</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">TestFunctions</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">])[</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+			<span class="c1"># if special MixedLists</span>
+			<span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">qt</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_trl</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">TrialFunctions</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">])[</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span>  <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">vt</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_tst</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">TestFunctions</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">])[</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span>  <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+			<span class="c1"># create Trial and Test</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">qt</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">[</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_trl&#39;</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">TrialFunction</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span> <span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">vt</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">[</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_tst&#39;</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">TestFunction</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span> <span class="p">]</span> <span class="p">)</span> <span class="p">)</span></div>
+
+<div class="viewcode-block" id="PDESystem.setup_form_args"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem.setup_form_args">[docs]</a>	<span class="k">def</span> <span class="nf">setup_form_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">space</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		This function was adapted from Mikael Mortensen on July, 2019.</span>
+<span class="sd">		Source code can be found here:</span>
+<span class="sd">		https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</span>
+
+<span class="sd">		Description:</span>
+<span class="sd">		This function creates all of the current and future iterations of variables</span>
+<span class="sd">		Functions to be used the the in the variational form.  It also retrieves</span>
+<span class="sd">		self.qt and self.vt and combines all Functions, TrialFunctions and</span>
+<span class="sd">		TestFunctions into one dictioanry.</span>
+<span class="sd">		It is dependent on the variable names given to the PDESystem.</span>
+
+<span class="sd">		:params order: A dictionary with keys of variable names and values of integers. i.e. {&#39;c&#39; : 3}</span>
+<span class="sd">		:type order: `dictionary`</span>
+
+<span class="sd">		:returns self.form_args: A dictionary with keys of variable names + suffix &#39;_trl&#39; and Firedrake TrialFunction or TrialFunctions objects. i.e. {&#39;u_&#39;: fd.Function, &#39;u_n&#39;: fd.Function, &#39;u_trl&#39;:fd.TrialFunction, &#39;u_tst&#39; : fd.TestFunction}</span>
+<span class="sd">		:rtype self.form_args: `dictionary`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">V</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">names</span>
+		<span class="n">form_args</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;t&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">}</span> <span class="c1"># create the time variable first</span>
+		<span class="c1"># for each variable in system</span>
+		<span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+			<span class="c1"># if MixedFunctionSpace, extract the individual components</span>
+			<span class="k">if</span> <span class="n">order</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+				<span class="c1"># create current iteration &#39;_n&#39; and future iteration &#39;_&#39; functions</span>
+				<span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">[</span> <span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span> <span class="p">]</span> <span class="p">)</span> <span class="p">)</span> <span class="c1"># next iteration</span>
+				<span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">[</span> <span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_n&#39;</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span> <span class="p">]</span> <span class="p">)</span> <span class="p">)</span> <span class="c1"># current</span>
+				<span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">form_args</span><span class="p">[</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">][</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span> <span class="c1"># gets individual components</span>
+				<span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_n</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">form_args</span><span class="p">[</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_n&#39;</span><span class="p">][</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span> <span class="c1"># gets individual components</span>
+			<span class="c1"># if special MixedLists</span>
+			<span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+				<span class="c1"># create current iteration &#39;_n&#39; and future iteration &#39;_&#39; functions</span>
+				<span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">[</span> <span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span> <span class="p">]</span> <span class="p">)</span> <span class="p">)</span> <span class="c1"># next iteration</span>
+				<span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">[</span> <span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_n&#39;</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span> <span class="p">]</span> <span class="p">)</span> <span class="p">)</span> <span class="c1"># current</span>
+				<span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">form_args</span><span class="p">[</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span> <span class="c1"># gets individual components</span>
+				<span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_n</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">form_args</span><span class="p">[</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_n&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span> <span class="c1"># gets individual components</span>
+			<span class="c1"># create current iteration &#39;_n&#39; and future iteration &#39;_&#39; functions</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">[</span> <span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span> <span class="p">]</span> <span class="p">)</span> <span class="p">)</span> <span class="c1"># next iteration</span>
+				<span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">[</span> <span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_n&#39;</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span> <span class="p">]</span> <span class="p">)</span> <span class="p">)</span> <span class="c1"># current</span>
+		<span class="c1"># store all functions into a dictionary form_args</span>
+		<span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qt</span><span class="p">)</span>
+		<span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vt</span><span class="p">)</span>
+
+		<span class="c1"># create new attribute self.form_args to store all function dictionaries</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span> <span class="o">=</span> <span class="n">form_args</span></div>
+
+<div class="viewcode-block" id="PDESystem.update_form_args"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem.update_form_args">[docs]</a>	<span class="k">def</span> <span class="nf">update_form_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name_list</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">space</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Description:</span>
+<span class="sd">		This function updates self.form_args dictionary when a new subsystem</span>
+<span class="sd">		is added to the PDESystem.</span>
+
+<span class="sd">		:params order: A dictionary with keys of variable names and values of integers. i.e. {&#39;c&#39; : 3}</span>
+<span class="sd">		:type order: `dictionary`</span>
+
+<span class="sd">		:returns self.form_args: A dictionary with keys of variable names + suffix &#39;_trl&#39; and Firedrake TrialFunction or TrialFunctions objects. i.e. {&#39;u_&#39;: fd.Function, &#39;u_n&#39;: fd.Function, &#39;u_trl&#39;:fd.TrialFunction, &#39;u_tst&#39; : fd.TestFunction}</span>
+<span class="sd">		:rtype self.form_args: `dictionary`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">V</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span>
+		<span class="c1"># for each new variable</span>
+		<span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">name_list</span><span class="p">:</span>
+			<span class="c1"># if MixedFunctionSpace, extract the individual components</span>
+			<span class="k">if</span> <span class="n">order</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+				<span class="c1"># create current iteration &#39;_n&#39; and future iteration &#39;_&#39; functions</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">[</span> <span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span> <span class="p">]</span> <span class="p">)</span> <span class="p">)</span> <span class="c1"># next iteration</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">[</span> <span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_n&#39;</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span> <span class="p">]</span> <span class="p">)</span> <span class="p">)</span> <span class="c1"># current</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">[</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">][</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span> <span class="c1"># gets individual components</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_n</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">[</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_n&#39;</span><span class="p">][</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span> <span class="c1"># gets individual components</span>
+			<span class="c1"># if special MixedLists</span>
+			<span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+				<span class="c1"># create current iteration &#39;_n&#39; and future iteration &#39;_&#39; functions</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">[</span> <span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span> <span class="p">]</span> <span class="p">)</span> <span class="p">)</span> <span class="c1"># next iteration</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">[</span> <span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_n&#39;</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span> <span class="p">]</span> <span class="p">)</span> <span class="p">)</span> <span class="c1"># current</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">form_args</span><span class="p">[</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span> <span class="c1"># gets individual components</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">(</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_n</span><span class="si">%i</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">num</span><span class="p">),</span> <span class="n">form_args</span><span class="p">[</span><span class="n">name</span><span class="o">+</span><span class="s1">&#39;_n&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">space</span><span class="p">[</span><span class="n">name</span><span class="p">])</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span> <span class="c1"># gets individual components</span>
+			<span class="c1"># create current iteration &#39;_n&#39; and future iteration &#39;_&#39; functions</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">[</span> <span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span> <span class="p">]</span> <span class="p">)</span> <span class="p">)</span> <span class="c1"># next iteration</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span> <span class="p">[</span> <span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_n&#39;</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span> <span class="p">]</span> <span class="p">)</span> <span class="p">)</span> <span class="c1"># current</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qt</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vt</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PDESystem.obtain_forms"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem.obtain_forms">[docs]</a>	<span class="k">def</span> <span class="nf">obtain_forms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		This function retrieves the variational forms, LHS, and RHS</span>
+<span class="sd">		from the PDESubsystem objects. This function should is called in solve.</span>
+<span class="sd">		The solve function should only be called once each subsystem has been</span>
+<span class="sd">		defined!</span>
+
+<span class="sd">		:returns forms: A list of UFL expressions of the variational forms of the underlying PDEs.</span>
+<span class="sd">		:rtypes forms: `list`</span>
+
+<span class="sd">		:returns a: A list of UFL expressions of the LHS of the variational forms.</span>
+<span class="sd">		:rtypes a: `list`</span>
+
+<span class="sd">		:returns L: A list of UFL expressions of the RHS of the underlying variational forms.</span>
+<span class="sd">		:rtypes L: `list`</span>
+
+<span class="sd">		:returns linear_solve: A list of strings to be called using eval() in the solve function. i.e. fd.solve(a == L)</span>
+<span class="sd">		:rtypes linear_solve: `list`</span>
+
+<span class="sd">		:returns nonlinear_solve: A list of strings to be called using eval() in the solve function. i.e. fd.solve(F==0)</span>
+<span class="sd">		:rtypes nonlinear_solve: `list`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">forms</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">L</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+		<span class="c1"># for each subsystem</span>
+		<span class="k">for</span> <span class="n">subsystem</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdesubsystems</span><span class="p">:</span>
+			<span class="c1"># retrieve variational form</span>
+			<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">form</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdesubsystems</span><span class="p">[</span><span class="n">subsystem</span><span class="p">]</span><span class="o">.</span><span class="n">F</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+				<span class="n">forms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">form</span><span class="p">)</span>
+			<span class="c1"># retrieve LHS</span>
+			<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">left</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdesubsystems</span><span class="p">[</span><span class="n">subsystem</span><span class="p">]</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+				<span class="n">a</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">left</span><span class="p">)</span>
+			<span class="c1"># retrive RHS</span>
+			<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">right</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdesubsystems</span><span class="p">[</span><span class="n">subsystem</span><span class="p">]</span><span class="o">.</span><span class="n">L</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+				<span class="n">L</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">right</span><span class="p">)</span>
+
+		<span class="c1"># create new attributes, forms, a, L</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">forms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="n">forms</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">L</span>
+
+		<span class="c1"># use string formatting to setup solvers. This method has the advantage</span>
+		<span class="c1"># of not relying on in time evaluation of parameters to determine</span>
+		<span class="c1"># adequate solve function</span>
+		<span class="n">linear_solve</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="n">nonlinear_solve</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="c1"># for each variable</span>
+		<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_seq</span><span class="p">):</span>
+			<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">[</span><span class="n">var</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="p">:</span> <span class="c1"># if mixedfunctionspace</span>
+				<span class="n">linear_solve</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fd.solve(self.a[</span><span class="si">%d</span><span class="s2">] == self.L[</span><span class="si">%d</span><span class="s2">], self.form_args[</span><span class="si">%r</span><span class="s2">], bcs=boundaries[</span><span class="si">%d</span><span class="s2">])&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+				<span class="n">nonlinear_solve</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fd.solve(self.forms[</span><span class="si">%d</span><span class="s2">] == 0, self.form_args[</span><span class="si">%r</span><span class="s2">], bcs=boundaries[</span><span class="si">%d</span><span class="s2">])&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">var</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+			<span class="c1"># if neither are specified</span>
+			<span class="k">elif</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;ksp_type&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;precond&#39;</span><span class="p">]:</span>
+				<span class="n">linear_solve</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fd.solve(self.a[</span><span class="si">%d</span><span class="s2">] == self.L[</span><span class="si">%d</span><span class="s2">], self.form_args[</span><span class="si">%r</span><span class="s2">], bcs=boundaries[</span><span class="si">%d</span><span class="s2">])&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+				<span class="n">nonlinear_solve</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fd.solve(self.forms[</span><span class="si">%d</span><span class="s2">] == 0, self.form_args[</span><span class="si">%r</span><span class="s2">], bcs=boundaries[</span><span class="si">%d</span><span class="s2">])&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">var</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+			<span class="c1"># if users have specified a preconditioner but not an iterative method</span>
+			<span class="k">elif</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;ksp_type&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;precond&#39;</span><span class="p">]:</span>
+				<span class="n">linear_solve</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fd.solve(self.a[</span><span class="si">%d</span><span class="s2">] == self.L[</span><span class="si">%d</span><span class="s2">], self.form_args[</span><span class="si">%r</span><span class="s2">], bcs=boundaries[</span><span class="si">%d</span><span class="s2">], solver_parameters={&#39;ksp_type&#39;: self.prm[&#39;ksp_type&#39;][</span><span class="si">%r</span><span class="s2">]})&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span><span class="p">))</span>
+				<span class="n">nonlinear_solve</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fd.solve(self.forms[</span><span class="si">%d</span><span class="s2">] == 0, self.form_args[</span><span class="si">%r</span><span class="s2">], bcs=boundaries[</span><span class="si">%d</span><span class="s2">], solver_parameters={&#39;ksp_type&#39;: self.prm[&#39;ksp_type&#39;][</span><span class="si">%r</span><span class="s2">]})&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">var</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span><span class="p">))</span>
+			<span class="c1"># if users have specified an iterative method but not a preconditioner</span>
+			<span class="k">elif</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;ksp_type&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;precond&#39;</span><span class="p">]:</span>
+				<span class="n">linear_solve</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fd.solve(self.a[</span><span class="si">%d</span><span class="s2">] == self.L[</span><span class="si">%d</span><span class="s2">], self.form_args[</span><span class="si">%r</span><span class="s2">], bcs=boundaries[</span><span class="si">%d</span><span class="s2">], solver_parameters={&#39;pc_type&#39;: self.prm[&#39;precond&#39;][</span><span class="si">%r</span><span class="s2">]})&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span><span class="p">))</span>
+				<span class="n">nonlinear_solve</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fd.solve(self.forms[</span><span class="si">%d</span><span class="s2">] == 0, self.form_args[</span><span class="si">%r</span><span class="s2">], bcs=boundaries[</span><span class="si">%d</span><span class="s2">], solver_parameters={&#39;pc_type&#39;: self.prm[&#39;precond&#39;][</span><span class="si">%r</span><span class="s2">]})&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">var</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span><span class="p">))</span>
+			<span class="c1"># if both are specified</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">linear_solve</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fd.solve(self.a[</span><span class="si">%d</span><span class="s2">] == self.L[</span><span class="si">%d</span><span class="s2">], self.form_args[</span><span class="si">%r</span><span class="s2">], bcs=boundaries[</span><span class="si">%d</span><span class="s2">], solver_parameters={&#39;ksp_type&#39;: self.prm[&#39;ksp_type&#39;][</span><span class="si">%r</span><span class="s2">], &#39;pc_type&#39;: self.prm[&#39;precond&#39;][</span><span class="si">%r</span><span class="s2">]})&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">var</span><span class="p">))</span>
+				<span class="n">nonlinear_solve</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;fd.solve(self.forms[</span><span class="si">%d</span><span class="s2">] == 0, self.form_args[</span><span class="si">%r</span><span class="s2">], bcs=boundaries[</span><span class="si">%d</span><span class="s2">], solver_parameters={&#39;ksp_type&#39;: self.prm[&#39;ksp_type&#39;][</span><span class="si">%r</span><span class="s2">], &#39;pc_type&#39;: self.prm[&#39;precond&#39;][</span><span class="si">%r</span><span class="s2">]})&quot;</span> <span class="o">%</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">var</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">var</span><span class="p">))</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">linear_solve</span> <span class="o">=</span> <span class="n">linear_solve</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">nonlinear_solve</span> <span class="o">=</span> <span class="n">nonlinear_solve</span></div>
+
+<div class="viewcode-block" id="PDESystem.solve"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem.solve">[docs]</a>	<span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_update</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">save_vars</span><span class="o">=</span><span class="p">[]):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		This function was adapted from Mikael Mortensen on July, 2019.</span>
+<span class="sd">		Source code can be found here:</span>
+<span class="sd">		https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</span>
+
+<span class="sd">		Description:</span>
+<span class="sd">		This function calls on each of the available pdesubsystems and solve for their respective variables</span>
+
+<span class="sd">		:params time_update: A switch to determine whether this problem has time dependent boundary conditions and variables. select True if yes.</span>
+<span class="sd">		:type time_update: `bool`</span>
+
+<span class="sd">		:returns: None. Solution functions are stored in and updated in the self.form_args attribute. This solve function only updates the values in self.form_args.</span>
+<span class="sd">		:rtype: None</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="c1"># call on the obtain form function to retrieve forms from PDESubsystems</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">obtain_forms</span><span class="p">()</span>
+
+		<span class="c1"># for saving, create different files for each variable specified</span>
+		<span class="n">outfiles</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">save_vars</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+		<span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">save_vars</span><span class="p">:</span>
+			<span class="n">outfiles</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s2">&quot;outputs/</span><span class="si">%s</span><span class="s2">.pvd&quot;</span> <span class="o">%</span> <span class="n">var</span><span class="p">)</span>
+			<span class="c1"># output the initial variable data</span>
+			<span class="n">outfiles</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">[</span><span class="n">var</span><span class="o">+</span><span class="s1">&#39;_n&#39;</span><span class="p">])</span>
+
+		<span class="c1"># create boundaries list to be used when solving</span>
+		<span class="n">boundaries</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># create how many boundaries</span>
+
+		<span class="n">abacus</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+		<span class="c1"># this loop will take the specified boundaries dictionary and add</span>
+		<span class="c1"># relatvant boundaries for each variable in the order that they are solved</span>
+		<span class="c1"># the abacus keeps track of repeated variables</span>
+		<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_seq</span><span class="p">):</span>
+			<span class="c1"># create a boundary condition for every form</span>
+			<span class="n">boundaries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">abacus</span><span class="p">[</span><span class="n">var</span><span class="p">]][</span><span class="mi">0</span><span class="p">])</span>
+			<span class="n">abacus</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+			<span class="c1"># for all subsequent subspaces, instead of adding a new list,</span>
+			<span class="c1"># merge together all of the boundary conditions</span>
+			<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">[</span><span class="n">var</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+				<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">[</span><span class="n">var</span><span class="p">])):</span>
+					<span class="n">boundaries</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">abacus</span><span class="p">[</span><span class="n">var</span><span class="p">]][</span><span class="mi">0</span><span class="p">])</span>
+					<span class="n">abacus</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">+=</span> <span class="mi">1</span>
+		<span class="n">tstart</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tstart</span>
+		<span class="n">tend</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tend</span>
+		<span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+		<span class="c1"># if there is a time updated condition and boundaries need to be updated</span>
+		<span class="k">if</span> <span class="n">time_update</span><span class="p">:</span>
+			<span class="k">while</span> <span class="n">tstart</span> <span class="o">&lt;</span> <span class="n">tend</span><span class="p">:</span>
+				<span class="c1"># solve current timestep variables</span>
+				<span class="c1"># use the abacus function again in order to keep track of</span>
+				<span class="c1"># repeated variables and boundary conditions</span>
+				<span class="n">abacus</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_seq</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+				<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_seq</span><span class="p">):</span>
+					<span class="c1"># first try the linear solve methods</span>
+					<span class="k">try</span><span class="p">:</span>
+						<span class="nb">eval</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_solve</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+					<span class="c1"># if failed, try the nonlinear solve methods</span>
+					<span class="k">except</span><span class="p">:</span>
+						<span class="nb">eval</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nonlinear_solve</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+					<span class="c1"># check if boundary conditions need to be updated</span>
+					<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">[</span><span class="n">var</span><span class="p">])):</span>
+						<span class="n">index</span> <span class="o">=</span> <span class="n">abacus</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">[</span><span class="n">var</span><span class="p">])</span> <span class="o">+</span> <span class="n">j</span>
+						<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">index</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;update&#39;</span><span class="p">:</span>
+							<span class="c1"># if a MixedFunctionSpace, check to see which subspaces</span>
+							<span class="c1"># require a boundary condition and update</span>
+							<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">[</span><span class="n">var</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">boundaries</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+								<span class="n">boundaries</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">index</span><span class="p">][</span><span class="mi">3</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">index</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">index</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
+							<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">[</span><span class="n">var</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">boundaries</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+								<span class="n">boundaries</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">fd</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">index</span><span class="p">][</span><span class="mi">3</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">index</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">index</span><span class="p">][</span><span class="mi">2</span><span class="p">])]</span>
+							<span class="k">else</span><span class="p">:</span>
+								<span class="n">boundaries</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">fd</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">[</span><span class="n">var</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">index</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">index</span><span class="p">][</span><span class="mi">2</span><span class="p">])]</span>
+					<span class="n">abacus</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+				<span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_seq</span><span class="p">:</span>
+					<span class="c1"># assign next timestep variables</span>
+					<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">[</span><span class="n">var</span><span class="o">+</span><span class="s1">&#39;_n&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">[</span><span class="n">var</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">])</span>
+					<span class="c1"># write current timestep variables</span>
+					<span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">save_vars</span><span class="p">:</span>
+						<span class="k">if</span> <span class="n">abacus</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_seq</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
+							<span class="n">outfiles</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">[</span><span class="n">var</span><span class="o">+</span><span class="s1">&#39;_n&#39;</span><span class="p">])</span>
+				<span class="c1"># increment time step</span>
+				<span class="n">tstart</span> <span class="o">+=</span> <span class="n">dt</span>
+				<span class="c1"># assign the time variable to the new value</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">tstart</span><span class="p">)</span>
+				<span class="k">if</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span> <span class="n">tstart</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">tstart</span><span class="p">,</span><span class="n">decimals</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1.e-8</span><span class="p">):</span>
+					<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;time = </span><span class="si">{0:.3f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tstart</span><span class="p">))</span>
+		<span class="c1"># if there is no need to update boundary conditions</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">while</span> <span class="n">tstart</span> <span class="o">&lt;</span> <span class="n">tend</span><span class="p">:</span>
+				<span class="c1"># solve current timestep variables</span>
+				<span class="c1"># use abacus to check for repeated variables</span>
+				<span class="n">abacus</span> <span class="o">=</span> <span class="nb">dict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_seq</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+				<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var_seq</span><span class="p">):</span>
+					<span class="c1"># try the linear solve methods</span>
+					<span class="k">try</span><span class="p">:</span>
+						<span class="nb">eval</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_solve</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+					<span class="c1"># try nonlinear solve methods</span>
+					<span class="k">except</span><span class="p">:</span>
+						<span class="nb">eval</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nonlinear_solve</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+					<span class="n">abacus</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+				<span class="c1"># assign next timestep variables</span>
+				<span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_seq</span><span class="p">:</span>
+					<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">[</span><span class="n">var</span><span class="o">+</span><span class="s1">&#39;_n&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">[</span><span class="n">var</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="p">])</span>
+					<span class="c1"># write current timestep variables</span>
+					<span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">save_vars</span><span class="p">:</span>
+						<span class="k">if</span> <span class="n">abacus</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_seq</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
+							<span class="n">outfiles</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">[</span><span class="n">var</span><span class="o">+</span><span class="s1">&#39;_n&#39;</span><span class="p">])</span>
+				<span class="c1"># increment time step</span>
+				<span class="n">tstart</span> <span class="o">+=</span> <span class="n">dt</span>
+				<span class="c1">#print progress</span>
+				<span class="k">if</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span> <span class="n">tstart</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">tstart</span><span class="p">,</span><span class="n">decimals</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1.e-8</span><span class="p">):</span>
+					<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;time = </span><span class="si">{0:.3f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tstart</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PDESystem.add_subsystem"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem.add_subsystem">[docs]</a>	<span class="k">def</span> <span class="nf">add_subsystem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">composition</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		This function was adapted from Mikael Mortensen on July, 2019.</span>
+<span class="sd">		Source code can be found here:</span>
+<span class="sd">		https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</span>
+
+<span class="sd">		Description:</span>
+<span class="sd">		This function allows users to create a new subsystem of PDEs with different variables within the overall</span>
+<span class="sd">		PDESystem class. The function automatically calls a series of update functions to generate the new function</span>
+<span class="sd">		spaces and form args</span>
+
+<span class="sd">		:params composition: A list of variable names to be added to the PDESystem. i.e. [&#39;cd&#39;, &#39;cs&#39;, &#39;as&#39;]</span>
+<span class="sd">		:type composition: `list`.</span>
+
+<span class="sd">		:params parameters: A dictionary of parameters with keys of the new composition to be added. i.e. {&#39;family&#39; : {&#39;cd&#39; : }, ...}</span>
+<span class="sd">		:type parameters: `dictionary`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="c1"># check to see if the new system variables added are in a list and if not,</span>
+		<span class="c1"># make a list</span>
+		<span class="c1"># relevant if users only wish to pass in one variable like &#39;c&#39;</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">composition</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+			<span class="n">temp</span> <span class="o">=</span> <span class="p">[]</span>
+			<span class="n">temp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">composition</span><span class="p">)</span>
+			<span class="n">composition</span> <span class="o">=</span> <span class="n">temp</span>
+
+		<span class="c1"># add the new variables</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">system_composition</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">composition</span><span class="p">)</span>
+		<span class="c1"># update the parameters dictionary with the new variables and values</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">prm</span> <span class="o">=</span> <span class="n">recursive_update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+
+		<span class="c1"># update the system names, and the variables</span>
+		<span class="n">system_name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">composition</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">system_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">system_name</span><span class="p">)</span>
+		<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">composition</span><span class="p">:</span>       <span class="c1"># Run over all individual components</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+		<span class="c1"># update the function spaces</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">update_function_spaces</span><span class="p">(</span><span class="n">composition</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;degree&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;space&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;family&#39;</span><span class="p">])</span>
+		<span class="c1"># create new variable trial and test functions</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">update_trial_test</span><span class="p">(</span><span class="n">composition</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;space&#39;</span><span class="p">])</span>
+		<span class="c1"># create new variable current and next iteration functions</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">update_form_args</span><span class="p">(</span><span class="n">composition</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;space&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="PDESystem.setup_initial"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem.setup_initial">[docs]</a>	<span class="k">def</span> <span class="nf">setup_initial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">expression</span><span class="p">,</span> <span class="n">mixedspace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		This function interpolates an expression onto a variable. Used for setting</span>
+<span class="sd">		up initalized Functions.</span>
+
+<span class="sd">		:params var: variable name. The key to the Function to be interpolated. i.e. &#39;cd&#39;</span>
+<span class="sd">		:type var: `str`</span>
+
+<span class="sd">		:params expression: a Firedrake expression. NOTE, this is not the same as a firedrake.Expression object. expression here can include firedrake Constants(), or firedrake conditionals(). i.e. fd.exp(x*y*t)</span>
+<span class="sd">		:type expression: `see description`</span>
+
+<span class="sd">		:params mixedspace: a switch to determine whether the variable is a MixedFunctionSpace or Taylorhood.</span>
+<span class="sd">		:type mixedspace: `bool`</span>
+
+<span class="sd">		:kwargs:</span>
+<span class="sd">			index: `int`. the specific subspace of the MixedFunctionSpace to</span>
+<span class="sd">			apply the initial condition. i.e. index = 0 for the first component</span>
+<span class="sd">			of the MixedFunctionSpace</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="n">mixedspace</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">split</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+			<span class="n">split</span><span class="p">[</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PDESystem.setup_constants"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem.setup_constants">[docs]</a>	<span class="k">def</span> <span class="nf">setup_constants</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dictionary</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		This function sets up a constants dictionary to be passed together with</span>
+<span class="sd">		self.form_args. The constants are dependent on the variable names</span>
+<span class="sd">		expressed in the forms function of PDESubsystems.</span>
+
+<span class="sd">		:params dictionary: keys with the same name as the arguments used in the variational forms, values can be firedrake Constants, Conditionals, or other firedrake classes (ex. FacetNormal) i.e. {&#39;k&#39; : fd.Constant(self.prm[&#39;dt&#39;])}</span>
+<span class="sd">		:type dictionary: `dictionary`</span>
+
+<span class="sd">		:returns constants: a dictionary containing all of the constants.</span>
+<span class="sd">		:rtype constants: `dictionary`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dictionary</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PDESystem.define"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem.define">[docs]</a>	<span class="k">def</span> <span class="nf">define</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_seq</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		This function specifies PDESubsystem objects for each individual subsystem</span>
+<span class="sd">		inside the overall PDESystem. This function must be called before setting</span>
+<span class="sd">		up boundary conditions as this function creates the boundary conditions</span>
+<span class="sd">		dictionary.</span>
+
+<span class="sd">		:params var_seq: A list of the variable sequence that a subsystem should solve for. The length of this list should be equivalent to the number of forms in the PDESubsystem specified for this subsystem. i.e. [&#39;u&#39;, &#39;p&#39;, &#39;u&#39;] for the Chorin projection scheme.</span>
+<span class="sd">		:type var_seq: `list`</span>
+
+<span class="sd">		:params name: The name of the subsystem that is defined. i.e. &#39;up&#39;</span>
+<span class="sd">		:type name: `str`</span>
+
+<span class="sd">		:return self.bc: A dictionary of all of the variables in the var_seq.</span>
+<span class="sd">		:rtype self.bc: `dictionary`</span>
+
+<span class="sd">		:return self.pdesystems: a dictionary of</span>
+<span class="sd">		:rtype self.pdesystems: `dictionary`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="c1"># the variable sequqnece is the sequence that the PDESubsystems forms</span>
+		<span class="c1"># are designed to solve for</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">var_seq</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">var_seq</span><span class="p">)</span>
+		<span class="c1"># create boundary conditions for each variable.</span>
+		<span class="c1"># if repeated variables exist, the dictionary will simply override the previous</span>
+		<span class="c1"># NOTE: the VALUES in the dictionary contain 5 different solver_parameters</span>
+		<span class="c1"># index 0 should be fd.DirichletBC objects</span>
+		<span class="c1"># index 1 should be expressions, such as fd.exp(x*y*t) or conditionals</span>
+		<span class="c1"># such as fd.Conditional()</span>
+		<span class="c1"># index 2 refers to the boundary which to apply the condition. ex. &#39;on_boundary&#39;</span>
+		<span class="c1"># index 3 should be either &#39;fixed&#39; or &#39;update&#39;. This tells the solver whether to</span>
+		<span class="c1"># update the boundary conditin</span>
+		<span class="c1"># index 4 tells the solver which indexed subspace this boundary condition should</span>
+		<span class="c1"># be applied to. ex. 0 for the first index of a MixedFunctionSpace</span>
+		<span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">var_seq</span><span class="p">:</span>
+			<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;space&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">([(</span><span class="n">var</span><span class="p">,</span> <span class="p">[[[],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;space&#39;</span><span class="p">][</span><span class="n">name</span><span class="p">]))]))</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">bc</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">([(</span><span class="n">var</span><span class="p">,</span> <span class="p">[[[],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">][</span><span class="n">var</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_seq</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">var</span><span class="p">))]))</span>
+		<span class="c1"># initialize the subsystem dictionary with PDESubsystem objects</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">pdesubsystems</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">subsystem</span><span class="p">(</span><span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="n">var_seq</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PDESystem.test_mms"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem.test_mms">[docs]</a>	<span class="k">def</span> <span class="nf">test_mms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">c_exact</span><span class="p">,</span> <span class="n">spatial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">temporal</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">f_dict</span> <span class="o">=</span> <span class="p">{},</span> <span class="n">dt_list</span><span class="o">=</span><span class="p">[],</span> <span class="n">meshes</span><span class="o">=</span><span class="p">[],</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Description</span>
+<span class="sd">		This function allows users to test a PDESystem&#39;s variable by asking for a manufactured</span>
+<span class="sd">		analytical solution. This function can either be set to test against spatial or temporal</span>
+<span class="sd">		discretization.</span>
+
+<span class="sd">		:params var: the variable that will be tested in the MMS. ex. &#39;cd&#39;</span>
+<span class="sd">		:type var: `char` or `str`</span>
+
+<span class="sd">		:params c_exact: an expression used to express the analytical manufactured &quot;solution&quot;</span>
+<span class="sd">		:type c_exact: `sympy expression / equation`</span>
+
+<span class="sd">		:params spatial: a boolean switch to determine if the mms test is against dt</span>
+<span class="sd">		:type spatial: `bool`</span>
+
+<span class="sd">		:params temporal: a booolean switch to determine if the mms test is against delta x</span>
+<span class="sd">		:type temporal: `bool`</span>
+
+<span class="sd">		:params f_dict: this dictionary converts sympy functions into firedrake functions. Keys are strings representing sympy expressions and values are firedrake functions ex. {&#39;exp&#39; : fd.exp}</span>
+<span class="sd">		:type f_dict: `dictionary`</span>
+
+<span class="sd">		:params dt_list: a list of delta t values to be used in the MMS test</span>
+<span class="sd">		:type dt_list: `list`</span>
+
+<span class="sd">		:params meshes: a list of firedrake.Mesh objects</span>
+<span class="sd">		:type meshes: `list`</span>
+
+<span class="sd">		:params plot: a boolean switch to allow plotting of the convergence graphs</span>
+<span class="sd">		:type plot: `bool`</span>
+
+<span class="sd">		:params index: an integer signifiying which subspace of a MixedFunctionSpace that the variable exists in</span>
+<span class="sd">		:type index: `int`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+
+		<span class="c1"># if users select error vs. dx</span>
+		<span class="k">if</span> <span class="n">spatial</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">dx_array</span> <span class="o">=</span> <span class="p">[]</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">error</span> <span class="o">=</span> <span class="p">[]</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">dx_test</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">c_exact</span><span class="p">,</span> <span class="n">meshes</span><span class="p">,</span> <span class="n">f_dict</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+			<span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+				<span class="n">plot_error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dx_array</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span>
+		<span class="c1"># if users select error vs. dt</span>
+		<span class="k">elif</span> <span class="n">temporal</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">dt_array</span> <span class="o">=</span> <span class="p">[]</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">error</span> <span class="o">=</span> <span class="p">[]</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">dt_test</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">c_exact</span><span class="p">,</span> <span class="n">dt_list</span><span class="p">,</span> <span class="n">f_dict</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+			<span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+				<span class="n">plot_error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt_array</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">)</span>
+		<span class="c1"># no tests specified</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;no convergence criteria specified&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PDESystem.dx_test"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem.dx_test">[docs]</a>	<span class="k">def</span> <span class="nf">dx_test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">c_exact</span><span class="p">,</span> <span class="n">meshes</span><span class="p">,</span> <span class="n">f_dict</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Description:</span>
+
+<span class="sd">		This function calculates the l2 norm between the exact mms solution and</span>
+<span class="sd">		the numerical solution against incremental values of dx.</span>
+
+<span class="sd">		:params var: the variable that will be tested in the MMS. ex. &#39;cd&#39;</span>
+<span class="sd">		:type var: `char` or `str`</span>
+
+<span class="sd">		:params c_exact: an expression used to express the analytical manufactured &quot;solution&quot;</span>
+<span class="sd">		:type c_exact: `sympy expression / equation`</span>
+
+<span class="sd">		:params f_dict: this dictionary converts sympy functions into firedrake functions. Keys are strings representing sympy expressions and values are firedrake functions ex. {&#39;exp&#39; : fd.exp}</span>
+<span class="sd">		:type f_dict: `dictionary`</span>
+
+<span class="sd">		:params meshes: a list of firedrake.Mesh objects</span>
+<span class="sd">		:type meshes: `list`</span>
+
+<span class="sd">		:params index: an integer signifiying which subspace of a MixedFunctionSpace that the variable exists in</span>
+<span class="sd">		:type index: `int`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="c1"># extract the &#39;str&#39; or &#39;char&#39; values of the symbol Symbols objects</span>
+		<span class="c1"># create a sorted list of these values, as they represent keys for Firedrake</span>
+		<span class="c1"># objects</span>
+		<span class="n">free_symbols</span> <span class="o">=</span> <span class="n">c_exact</span><span class="o">.</span><span class="n">free_symbols</span>
+		<span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">free_symbols</span><span class="p">)))</span>
+		<span class="n">keys</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+		<span class="c1"># create a function from the sympy expression</span>
+		<span class="n">function</span> <span class="o">=</span> <span class="n">sy</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">free_symbols</span><span class="p">),</span> <span class="n">c_exact</span><span class="p">,</span> <span class="n">f_dict</span><span class="p">)</span>
+
+		<span class="c1"># for each mesh specified in the list</span>
+		<span class="k">for</span> <span class="n">mesh</span> <span class="ow">in</span> <span class="n">meshes</span><span class="p">:</span>
+			<span class="c1"># update the PDESystem&#39;s mesh value</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span>
+			<span class="c1"># get the dx value of the mesh</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">dx_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_dx</span><span class="p">(</span><span class="n">mesh</span><span class="p">))</span>
+
+			<span class="c1"># obtain the x, y, and/or z coordinates of the mesh</span>
+			<span class="n">coordinate</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">SpatialCoordinate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
+			<span class="c1"># create a list of these objects</span>
+			<span class="n">initial_coordinate</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">coordinate</span><span class="p">)</span>
+			<span class="n">final_coordinate</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">coordinate</span><span class="p">)</span>
+			<span class="k">if</span> <span class="s1">&#39;t&#39;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+				<span class="c1"># add the time variables into the list</span>
+				<span class="n">initial_coordinate</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tstart</span><span class="p">))</span>
+				<span class="n">final_coordinate</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]))</span>
+
+			<span class="c1"># create a dictionary to be passed into the lambdified sympy function</span>
+			<span class="n">function_ini</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">initial_coordinate</span><span class="p">))</span>
+			<span class="n">function_fin</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">final_coordinate</span><span class="p">))</span>
+			<span class="c1"># set initial time</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tstart</span><span class="p">)</span>
+
+			<span class="c1"># reinitialize the function spaces and functions for each different mesh</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">setup_function_spaces</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;degree&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;space&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;family&#39;</span><span class="p">])</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">setup_trial_test</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;space&#39;</span><span class="p">])</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">setup_form_args</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;space&#39;</span><span class="p">])</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">setup_constants</span><span class="p">()</span>
+			<span class="c1"># reinitialize the PDESubsystems with new mesh arguments</span>
+			<span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_names</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">pdesubsystems</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">pdesubsystems</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">get_form</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">constants</span><span class="p">)</span>
+			<span class="c1"># interpolate the initial sympy function</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">[</span><span class="n">var</span><span class="o">+</span><span class="s1">&#39;_n&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="o">**</span><span class="n">function_ini</span><span class="p">))</span>
+			<span class="c1"># set up boundary conditions</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">setup_bcs</span><span class="p">()</span>
+			<span class="c1"># solve and obtain error</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">time_update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+			<span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+				<span class="n">solution</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="o">**</span><span class="n">function_fin</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">errornorm</span><span class="p">(</span><span class="n">solution</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">[</span><span class="n">var</span><span class="o">+</span><span class="s1">&#39;_n&#39;</span><span class="p">]))</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">solution</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="o">**</span><span class="n">function_fin</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">index</span><span class="p">])</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">errornorm</span><span class="p">(</span><span class="n">solution</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">[</span><span class="n">var</span><span class="o">+</span><span class="s1">&#39;_n&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="n">index</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="PDESystem.dt_test"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem.dt_test">[docs]</a>	<span class="k">def</span> <span class="nf">dt_test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">c_exact</span><span class="p">,</span> <span class="n">dt_list</span><span class="p">,</span> <span class="n">f_dict</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Description:</span>
+
+<span class="sd">		This function calculates the l2 norm between the exact mms solution and</span>
+<span class="sd">		the numerical solution against incremental values of dt.</span>
+
+<span class="sd">		:params var: the variable that will be tested in the MMS. ex. &#39;cd&#39;</span>
+<span class="sd">		:type var: `char` or `str`</span>
+
+<span class="sd">		:params c_exact: an expression used to express the analytical manufactured &quot;solution&quot;</span>
+<span class="sd">		:type c_exact: `sympy expression / equation`</span>
+
+<span class="sd">		:params f_dict: this dictionary converts sympy functions into firedrake functions. Keys are strings representing sympy expressions and values are firedrake functions ex. {&#39;exp&#39; : fd.exp}</span>
+<span class="sd">		:type f_dict: `dictionary`</span>
+
+<span class="sd">		:params dt_list: a list of delta t values</span>
+<span class="sd">		:type dt_list: `list`</span>
+
+<span class="sd">		:params index: an integer signifiying which subspace of a MixedFunctionSpace that the variable exists in</span>
+<span class="sd">		:type index: `int`</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="c1"># extract the &#39;str&#39; or &#39;char&#39; values of the symbol Symbols objects</span>
+		<span class="c1"># create a sorted list of these values, as they represent keys for Firedrake</span>
+		<span class="c1"># objects</span>
+		<span class="n">free_symbols</span> <span class="o">=</span> <span class="n">c_exact</span><span class="o">.</span><span class="n">free_symbols</span>
+		<span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">free_symbols</span><span class="p">)))</span>
+		<span class="n">keys</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+		<span class="c1"># create a function from the sympy expression</span>
+		<span class="n">function</span> <span class="o">=</span> <span class="n">sy</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">free_symbols</span><span class="p">),</span> <span class="n">c_exact</span><span class="p">,</span> <span class="n">f_dict</span><span class="p">)</span>
+
+		<span class="c1"># obtain the x, y, and/or z coordinates of the mesh</span>
+		<span class="n">coordinate</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">SpatialCoordinate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
+		<span class="c1"># create a list of these objects</span>
+		<span class="n">initial_coordinate</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">coordinate</span><span class="p">)</span>
+		<span class="n">final_coordinate</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">coordinate</span><span class="p">)</span>
+		<span class="k">if</span> <span class="s1">&#39;t&#39;</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+			<span class="c1"># add the time variables into the list</span>
+			<span class="n">initial_coordinate</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tstart</span><span class="p">))</span>
+			<span class="n">final_coordinate</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;T&#39;</span><span class="p">]))</span>
+
+		<span class="c1"># create a dictionary to be passed into the lambdified sympy function</span>
+		<span class="n">function_ini</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">initial_coordinate</span><span class="p">))</span>
+		<span class="n">function_fin</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">final_coordinate</span><span class="p">))</span>
+
+		<span class="n">old_dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+		<span class="c1"># for each timestep value</span>
+		<span class="k">for</span> <span class="n">deltat</span> <span class="ow">in</span> <span class="n">dt_list</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">dt_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">deltat</span><span class="p">)</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">deltat</span>
+			<span class="c1"># reinitialize the parameters with the new time step</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">prm</span> <span class="o">=</span> <span class="n">recursive_update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;dt&#39;</span><span class="p">:</span><span class="n">deltat</span><span class="p">})</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tstart</span><span class="p">)</span>
+			<span class="c1"># reinitialize the function spaces and functions for each different mesh</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">setup_function_spaces</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;degree&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;space&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;family&#39;</span><span class="p">])</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">setup_trial_test</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;space&#39;</span><span class="p">])</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">setup_form_args</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prm</span><span class="p">[</span><span class="s1">&#39;space&#39;</span><span class="p">])</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">setup_constants</span><span class="p">()</span>
+			<span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_names</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">pdesubsystems</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">get_form</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">constants</span><span class="p">)</span>
+			<span class="c1"># interpolate the initial sympy function</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">[</span><span class="n">var</span><span class="o">+</span><span class="s1">&#39;_n&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="o">**</span><span class="n">function_ini</span><span class="p">))</span>
+			<span class="c1"># set up boundary conditions</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">setup_bcs</span><span class="p">()</span>
+			<span class="c1"># solve and obtain error</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">time_update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+			<span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+				<span class="n">solution</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="o">**</span><span class="n">function_fin</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">errornorm</span><span class="p">(</span><span class="n">solution</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">[</span><span class="n">var</span><span class="o">+</span><span class="s1">&#39;_n&#39;</span><span class="p">]))</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">solution</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">function</span><span class="p">(</span><span class="o">**</span><span class="n">function_fin</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">index</span><span class="p">])</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">errornorm</span><span class="p">(</span><span class="n">solution</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="p">[</span><span class="n">var</span><span class="o">+</span><span class="s1">&#39;_n&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="n">index</span><span class="p">]))</span></div>
+
+<div class="viewcode-block" id="PDESystem.view_args"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.PDESystem.view_args">[docs]</a>	<span class="k">def</span> <span class="nf">view_args</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		This function prints all of the form_args keys, or names of the trial, test, and functions created in the current solver</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">form_args</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div></div>
+
+<div class="viewcode-block" id="get_dx"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.get_dx">[docs]</a><span class="k">def</span> <span class="nf">get_dx</span><span class="p">(</span><span class="n">mesh</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Description:</span>
+<span class="sd">	This function returns the average delta x values of a firedrake.Mesh</span>
+<span class="sd">	It makes a simplyfying assumption that finite elements are equilateral</span>
+<span class="sd">	triangles.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">DG0</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="s1">&#39;DG&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+	<span class="n">b</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">DG0</span><span class="p">)</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">CellVolume</span><span class="p">(</span><span class="n">mesh</span><span class="p">))</span>
+	<span class="n">mean</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">dat</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+	<span class="k">return</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mean</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="plot_error"><a class="viewcode-back" href="../../pdesystem.html#fireframe.PDESystem.plot_error">[docs]</a><span class="k">def</span> <span class="nf">plot_error</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">var</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Description:</span>
+<span class="sd">	A simple matplotlib wrapper to plot the logarithmic curves of error vs</span>
+<span class="sd">	dt or dx. Fits a linear line to the data points to determine convergence rate.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">fig</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+	<span class="c1"># plot error map</span>
+	<span class="n">ax1</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;fd_norm&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">markerfacecolor</span><span class="o">=</span><span class="s1">&#39;None&#39;</span><span class="p">)</span>
+
+	<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;$\Delta </span><span class="si">%s</span><span class="s1">$&#39;</span> <span class="o">%</span><span class="n">var</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+	<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;$l_</span><span class="si">{2}</span><span class="s1">$  norm&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+	<span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Error convergence graph vs. $\Delta </span><span class="si">%s</span><span class="s1">$&#39;</span> <span class="o">%</span><span class="n">var</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+	<span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+
+	<span class="c1"># line fit</span>
+	<span class="n">start_fit</span> <span class="o">=</span> <span class="mi">0</span>
+	<span class="n">line_fit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">start_fit</span><span class="p">:]),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">start_fit</span><span class="p">:]),</span> <span class="mi">1</span><span class="p">)</span>
+
+	<span class="n">ax1</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">line_fit</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">x</span><span class="o">**</span><span class="p">(</span><span class="n">line_fit</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s1">&#39;k-&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;slope: </span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line_fit</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+	<span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Keer Mei
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

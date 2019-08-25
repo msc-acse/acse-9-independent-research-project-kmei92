@@ -152,12 +152,12 @@
   <div class="section" id="pdesystem-module">
 <h1>PDESystem Module<a class="headerlink" href="#pdesystem-module" title="Permalink to this headline">¶</a></h1>
 <p>Contained here are the member functions of Fireframe's main class: PDESystem.</p>
-<span class="target" id="module-acse.fireframe.PDESystem"></span><p>author : Keer Mei
+<span class="target" id="module-fireframe.PDESystem"></span><p>author : Keer Mei
 email: <a class="reference external" href="mailto:keer&#46;mei18&#37;&#52;&#48;imperial&#46;ac&#46;uk">keer<span>&#46;</span>mei18<span>&#64;</span>imperial<span>&#46;</span>ac<span>&#46;</span>uk</a>
 github username: kmei92</p>
 <dl class="class">
-<dt id="acse.fireframe.PDESystem.PDESystem">
-<em class="property">class </em><code class="descclassname">acse.fireframe.PDESystem.</code><code class="descname">PDESystem</code><span class="sig-paren">(</span><em>system_composition</em>, <em>mesh</em>, <em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem">
+<em class="property">class </em><code class="descclassname">fireframe.PDESystem.</code><code class="descname">PDESystem</code><span class="sig-paren">(</span><em>system_composition</em>, <em>mesh</em>, <em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class was adapted from Mikael Mortensen on July, 2019.
 Source code can be found here:
 <a class="reference external" href="https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py">https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</a></p>
@@ -223,8 +223,8 @@ equations.</p>
 </tbody>
 </table>
 <dl class="method">
-<dt id="acse.fireframe.PDESystem.PDESystem.add_subsystem">
-<code class="descname">add_subsystem</code><span class="sig-paren">(</span><em>composition</em>, <em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.add_subsystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.add_subsystem" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem.add_subsystem">
+<code class="descname">add_subsystem</code><span class="sig-paren">(</span><em>composition</em>, <em>parameters</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.add_subsystem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.add_subsystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function was adapted from Mikael Mortensen on July, 2019.
 Source code can be found here:
 <a class="reference external" href="https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py">https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</a></p>
@@ -247,8 +247,8 @@ spaces and form args</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="acse.fireframe.PDESystem.PDESystem.define">
-<code class="descname">define</code><span class="sig-paren">(</span><em>var_seq</em>, <em>name</em>, <em>subsystem</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.define"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.define" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem.define">
+<code class="descname">define</code><span class="sig-paren">(</span><em>var_seq</em>, <em>name</em>, <em>subsystem</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.define"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.define" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function specifies PDESubsystem objects for each individual subsystem
 inside the overall PDESystem. This function must be called before setting
 up boundary conditions as this function creates the boundary conditions
@@ -276,8 +276,8 @@ dictionary.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="acse.fireframe.PDESystem.PDESystem.dt_test">
-<code class="descname">dt_test</code><span class="sig-paren">(</span><em>var</em>, <em>c_exact</em>, <em>dt_list</em>, <em>f_dict</em>, <em>index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.dt_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.dt_test" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem.dt_test">
+<code class="descname">dt_test</code><span class="sig-paren">(</span><em>var</em>, <em>c_exact</em>, <em>dt_list</em>, <em>f_dict</em>, <em>index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.dt_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.dt_test" title="Permalink to this definition">¶</a></dt>
 <dd><p>Description:</p>
 <p>This function calculates the l2 norm between the exact mms solution and
 the numerical solution against incremental values of dt.</p>
@@ -300,8 +300,8 @@ the numerical solution against incremental values of dt.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="acse.fireframe.PDESystem.PDESystem.dx_test">
-<code class="descname">dx_test</code><span class="sig-paren">(</span><em>var</em>, <em>c_exact</em>, <em>meshes</em>, <em>f_dict</em>, <em>index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.dx_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.dx_test" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem.dx_test">
+<code class="descname">dx_test</code><span class="sig-paren">(</span><em>var</em>, <em>c_exact</em>, <em>meshes</em>, <em>f_dict</em>, <em>index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.dx_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.dx_test" title="Permalink to this definition">¶</a></dt>
 <dd><p>Description:</p>
 <p>This function calculates the l2 norm between the exact mms solution and
 the numerical solution against incremental values of dx.</p>
@@ -324,8 +324,8 @@ the numerical solution against incremental values of dx.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="acse.fireframe.PDESystem.PDESystem.obtain_forms">
-<code class="descname">obtain_forms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.obtain_forms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.obtain_forms" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem.obtain_forms">
+<code class="descname">obtain_forms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.obtain_forms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.obtain_forms" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function retrieves the variational forms, LHS, and RHS
 from the PDESubsystem objects. This function should is called in solve.
 The solve function should only be called once each subsystem has been
@@ -363,8 +363,8 @@ defined!</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="acse.fireframe.PDESystem.PDESystem.setup_constants">
-<code class="descname">setup_constants</code><span class="sig-paren">(</span><em>dictionary</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.setup_constants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.setup_constants" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem.setup_constants">
+<code class="descname">setup_constants</code><span class="sig-paren">(</span><em>dictionary</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.setup_constants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.setup_constants" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function sets up a constants dictionary to be passed together with
 self.form_args. The constants are dependent on the variable names
 expressed in the forms function of PDESubsystems.</p>
@@ -386,8 +386,8 @@ expressed in the forms function of PDESubsystems.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="acse.fireframe.PDESystem.PDESystem.setup_form_args">
-<code class="descname">setup_form_args</code><span class="sig-paren">(</span><em>order</em>, <em>space</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.setup_form_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.setup_form_args" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem.setup_form_args">
+<code class="descname">setup_form_args</code><span class="sig-paren">(</span><em>order</em>, <em>space</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.setup_form_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.setup_form_args" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function was adapted from Mikael Mortensen on July, 2019.
 Source code can be found here:
 <a class="reference external" href="https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py">https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</a></p>
@@ -414,8 +414,8 @@ It is dependent on the variable names given to the PDESystem.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="acse.fireframe.PDESystem.PDESystem.setup_function_spaces">
-<code class="descname">setup_function_spaces</code><span class="sig-paren">(</span><em>mesh</em>, <em>degree</em>, <em>space</em>, <em>order</em>, <em>family</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.setup_function_spaces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.setup_function_spaces" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem.setup_function_spaces">
+<code class="descname">setup_function_spaces</code><span class="sig-paren">(</span><em>mesh</em>, <em>degree</em>, <em>space</em>, <em>order</em>, <em>family</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.setup_function_spaces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.setup_function_spaces" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function was adapted from Mikael Mortensen on July, 2019.
 Source code can be found here:
 <a class="reference external" href="https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py">https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</a></p>
@@ -445,8 +445,8 @@ There is a check on whether the subsystem contains a MixedFunctionSpace</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="acse.fireframe.PDESystem.PDESystem.setup_initial">
-<code class="descname">setup_initial</code><span class="sig-paren">(</span><em>var</em>, <em>expression</em>, <em>mixedspace=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.setup_initial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.setup_initial" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem.setup_initial">
+<code class="descname">setup_initial</code><span class="sig-paren">(</span><em>var</em>, <em>expression</em>, <em>mixedspace=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.setup_initial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.setup_initial" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function interpolates an expression onto a variable. Used for setting
 up initalized Functions.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -470,8 +470,8 @@ of the MixedFunctionSpace</td>
 </dd></dl>
 
 <dl class="method">
-<dt id="acse.fireframe.PDESystem.PDESystem.setup_system">
-<code class="descname">setup_system</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.setup_system"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.setup_system" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem.setup_system">
+<code class="descname">setup_system</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.setup_system"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.setup_system" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function was adapted from Mikael Mortensen on July, 2019.
 Source code can be found here:
 <a class="reference external" href="https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py">https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</a></p>
@@ -498,8 +498,8 @@ the subsystems (depending on how many coupled systems of PDEs there are) and cre
 </dd></dl>
 
 <dl class="method">
-<dt id="acse.fireframe.PDESystem.PDESystem.setup_trial_test">
-<code class="descname">setup_trial_test</code><span class="sig-paren">(</span><em>order</em>, <em>space</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.setup_trial_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.setup_trial_test" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem.setup_trial_test">
+<code class="descname">setup_trial_test</code><span class="sig-paren">(</span><em>order</em>, <em>space</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.setup_trial_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.setup_trial_test" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function was adapted from Mikael Mortensen on July, 2019.
 Source code can be found here:
 <a class="reference external" href="https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py">https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</a></p>
@@ -527,8 +527,8 @@ variational form. It is dependent on the variable names given to the PDESystem</
 </dd></dl>
 
 <dl class="method">
-<dt id="acse.fireframe.PDESystem.PDESystem.solve">
-<code class="descname">solve</code><span class="sig-paren">(</span><em>time_update=False</em>, <em>save_vars=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.solve" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem.solve">
+<code class="descname">solve</code><span class="sig-paren">(</span><em>time_update=False</em>, <em>save_vars=[]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function was adapted from Mikael Mortensen on July, 2019.
 Source code can be found here:
 <a class="reference external" href="https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py">https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</a></p>
@@ -550,8 +550,8 @@ This function calls on each of the available pdesubsystems and solve for their r
 </dd></dl>
 
 <dl class="method">
-<dt id="acse.fireframe.PDESystem.PDESystem.test_mms">
-<code class="descname">test_mms</code><span class="sig-paren">(</span><em>var</em>, <em>c_exact</em>, <em>spatial=False</em>, <em>temporal=False</em>, <em>f_dict={}</em>, <em>dt_list=[]</em>, <em>meshes=[]</em>, <em>plot=False</em>, <em>index=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.test_mms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.test_mms" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem.test_mms">
+<code class="descname">test_mms</code><span class="sig-paren">(</span><em>var</em>, <em>c_exact</em>, <em>spatial=False</em>, <em>temporal=False</em>, <em>f_dict={}</em>, <em>dt_list=[]</em>, <em>meshes=[]</em>, <em>plot=False</em>, <em>index=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.test_mms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.test_mms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Description
 This function allows users to test a PDESystem's variable by asking for a manufactured
 analytical solution. This function can either be set to test against spatial or temporal
@@ -584,8 +584,8 @@ discretization.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="acse.fireframe.PDESystem.PDESystem.update_form_args">
-<code class="descname">update_form_args</code><span class="sig-paren">(</span><em>name_list</em>, <em>order</em>, <em>space</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.update_form_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.update_form_args" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem.update_form_args">
+<code class="descname">update_form_args</code><span class="sig-paren">(</span><em>name_list</em>, <em>order</em>, <em>space</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.update_form_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.update_form_args" title="Permalink to this definition">¶</a></dt>
 <dd><p>Description:
 This function updates self.form_args dictionary when a new subsystem
 is added to the PDESystem.</p>
@@ -606,8 +606,8 @@ is added to the PDESystem.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="acse.fireframe.PDESystem.PDESystem.update_function_spaces">
-<code class="descname">update_function_spaces</code><span class="sig-paren">(</span><em>name_list</em>, <em>mesh</em>, <em>degree</em>, <em>space</em>, <em>order</em>, <em>family</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.update_function_spaces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.update_function_spaces" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem.update_function_spaces">
+<code class="descname">update_function_spaces</code><span class="sig-paren">(</span><em>name_list</em>, <em>mesh</em>, <em>degree</em>, <em>space</em>, <em>order</em>, <em>family</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.update_function_spaces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.update_function_spaces" title="Permalink to this definition">¶</a></dt>
 <dd><p>Description:
 This function updates function spaces when a new subsystem is added to
 the PDESystem.
@@ -635,8 +635,8 @@ There is a check on whether the subsystem contains a MixedFunctionSpace</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="acse.fireframe.PDESystem.PDESystem.update_trial_test">
-<code class="descname">update_trial_test</code><span class="sig-paren">(</span><em>name_list</em>, <em>order</em>, <em>space</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.update_trial_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.update_trial_test" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem.update_trial_test">
+<code class="descname">update_trial_test</code><span class="sig-paren">(</span><em>name_list</em>, <em>order</em>, <em>space</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.update_trial_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.update_trial_test" title="Permalink to this definition">¶</a></dt>
 <dd><p>Description:
 This function updates self.qt and self.vt when a new subsystem is added.
 It is dependent on the variable names given to the PDESystem.</p>
@@ -664,16 +664,16 @@ It is dependent on the variable names given to the PDESystem.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="acse.fireframe.PDESystem.PDESystem.view_args">
-<code class="descname">view_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#PDESystem.view_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.PDESystem.view_args" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.PDESystem.view_args">
+<code class="descname">view_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.view_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.view_args" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function prints all of the form_args keys, or names of the trial, test, and functions created in the current solver</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="function">
-<dt id="acse.fireframe.PDESystem.get_dx">
-<code class="descclassname">acse.fireframe.PDESystem.</code><code class="descname">get_dx</code><span class="sig-paren">(</span><em>mesh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#get_dx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.get_dx" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.get_dx">
+<code class="descclassname">fireframe.PDESystem.</code><code class="descname">get_dx</code><span class="sig-paren">(</span><em>mesh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#get_dx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.get_dx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Description:
 This function returns the average delta x values of a firedrake.Mesh
 It makes a simplyfying assumption that finite elements are equilateral
@@ -681,16 +681,16 @@ triangles.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="acse.fireframe.PDESystem.plot_error">
-<code class="descclassname">acse.fireframe.PDESystem.</code><code class="descname">plot_error</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>var</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#plot_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.plot_error" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.plot_error">
+<code class="descclassname">fireframe.PDESystem.</code><code class="descname">plot_error</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>var</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#plot_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.plot_error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Description:
 A simple matplotlib wrapper to plot the logarithmic curves of error vs
 dt or dx. Fits a linear line to the data points to determine convergence rate.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="acse.fireframe.PDESystem.recursive_update">
-<code class="descclassname">acse.fireframe.PDESystem.</code><code class="descname">recursive_update</code><span class="sig-paren">(</span><em>dst</em>, <em>src</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/acse/fireframe/PDESystem.html#recursive_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#acse.fireframe.PDESystem.recursive_update" title="Permalink to this definition">¶</a></dt>
+<dt id="fireframe.PDESystem.recursive_update">
+<code class="descclassname">fireframe.PDESystem.</code><code class="descname">recursive_update</code><span class="sig-paren">(</span><em>dst</em>, <em>src</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#recursive_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.recursive_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function was obtained from Mikael Mortensen on July, 2019.
 Source code can be found here:
 <a class="reference external" href="https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py">https://bitbucket.org/simula_cbc/cbcpdesys/src/master/cbc/pdesys/PDESystem.py</a></p>
