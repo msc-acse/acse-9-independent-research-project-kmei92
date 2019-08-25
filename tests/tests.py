@@ -6,9 +6,9 @@ github username: kmei92
 
 import sys
 sys.path.append("..")
-from acse.fireframe.PDESystem import *
-from acse.fireframe.PDESubsystem import *
-from acse.fireframe.pdeforms_for_travis import *
+from fireframe.PDESystem import *
+from fireframe.PDESubsystem import *
+from fireframe.pdeforms import *
 import firedrake as fd
 
 
@@ -35,18 +35,18 @@ def test_parameters():
 def test_load_mesh():
 
 	# flow_past_cylinder
-	mesh1 = fd.Mesh("acse/meshes/flow_past_cylinder.msh")
+	mesh1 = fd.Mesh("meshes/flow_past_cylinder.msh")
 	# high resolution cylinder
-	mesh2 = fd.Mesh("acse/meshes/cylinder.msh")
+	mesh2 = fd.Mesh("meshes/cylinder.msh")
 	assert(mesh1 is not None)
 	assert(mesh2 is not None)
 
 	for i in range(1, 11):
-		mesh = fd.Mesh("acse/meshes/step%d.msh" % i)
+		mesh = fd.Mesh("meshes/step%d.msh" % i)
 		assert(mesh is not None)
 
 	for i in range(1, 6):
-		mesh = fd.Mesh("acse/meshes/cylinder%d.msh" % i)
+		mesh = fd.Mesh("meshes/cylinder%d.msh" % i)
 		assert(mesh is not None)
 
 def test_flow_demo():

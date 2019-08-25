@@ -4,7 +4,7 @@ email: keer.mei18@imperial.ac.uk
 github username: kmei92
 """
 
-from PDESubsystem import *
+from .PDESubsystem import *
 
 class navier_stokes(PDESubsystem):
 
