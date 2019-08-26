@@ -536,8 +536,6 @@ class PDESystem:
 		# if there is a time updated condition and boundaries need to be updated
 		if time_update:
 			while tstart < tend:
-				# print(tstart)
-				# print(boundaries)
 				# solve current timestep variables
 				# use the abacus function again in order to keep track of
 				# repeated variables and boundary conditions
