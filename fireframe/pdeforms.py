@@ -6,6 +6,34 @@ github username: kmei92
 
 from .PDESubsystem import *
 
+"""
+This module contains all the variational forms for the demontration problems
+in Fireframe. They are all written in Firedrake syntax.
+
+navier_stokes: contains the three forms of Chorin's scheme
+
+reactions: contains the nonlinear form of 3 chemicals first order reaction
+
+reactions_uncoupled: contains 3 linear forms of 3 chemicals first order reaction
+
+radio_transport_coupled: contains the nonlinear form of 2 radionuclide 3 phase
+transfer transport equations coupled to the navier stokes equation
+
+radio_transport_coupled_mms: contains the nonlinear form of the
+radionuclide transport equations with a manufcatured solution to the dissolved
+phase radionuclide 1 specific activity
+
+radio_transport_hydro: contains the nonlinear form of 2 radionuclide 3 phase
+transfer transport equations coupled to the shallow water equation
+
+temp_poisson: contains the nonlinear form of the poissons equation
+
+depth_avg_hydro: contains the nonlinear form of the
+no normal boundary condition shallow water equation
+
+depth_avg_hydro_flather: contains the nonlinear form of the
+flather boundary condition shallow water equation
+"""
 class navier_stokes(PDESubsystem):
 
 	def form1(self, u_trl, u_tst, u_n, p_n, n, deltat, f, nu, **kwargs):
@@ -188,6 +216,14 @@ class radio_transport_coupled_mms(PDESubsystem):
 		manufactured equation for nonlinear system of equations for first radionuclide with half life lamd1.
 		Includes 3 phases: dissolved, suspended, and sediment. Includes an extra source term.
 		"""
+		if 'analytical' in kwargs:
+			dc_dt = fd.diff(kwargs['analytical'], t)
+			grad_c = fd.grad(kwargs['analytical'])
+			laplace = fd.div(fd.grad(kwargs['analytical']))
+			source1 = dc_dt + fd.dot(u_, grad_c) - Kd*kwargs['analytical'] + k1*kwargs['analytical'] + lamd1*kwargs['analytical']
+			source2 = -k1 * kwargs['analytical']
+			source3 = - (1./(L * rho_s * frac))*k1*- (1./(L * rho_s * frac))
+
 		# manufactured source term
 		x, y = fd.SpatialCoordinate(self.mesh)
 		c_source = fd.exp(x*y*t)
@@ -242,6 +278,78 @@ class radio_transport_coupled_mms(PDESubsystem):
 		# suspended phase
 		Form += ((d_2 - d_n2) / deltat)*d_tst2*fd.dx \
 		+ fd.inner(fd.dot(u_, fd.nabla_grad(d_2)), d_tst2)*fd.dx \
+		+ Kd*fd.dot(fd.grad(d_2), fd.grad(d_tst2))*fd.dx \
+		- k1*d_1*d_tst2*fd.dx \
+		+ k2*d_2*d_tst2*fd.dx \
+		- lamd1*c_n2*d_tst2*fd.dx \
+		+ lamd2*d_2*d_tst2*fd.dx
+
+		# sediment phase
+		Form += ((d_3 - d_n3) / deltat)*d_tst3*fd.dx \
+		- (1./(L * rho_s * frac)) * k1*d_1*d_tst3*fd.dx \
+		+ k2*d_1*phi*d_tst3*fd.dx \
+		- lamd1*c_n3*d_tst3*fd.dx \
+		+ lamd2*d_3*d_tst3*fd.dx
+
+		return Form
+
+class radio_transport_hydro(PDESubsystem):
+
+	def form1(self, c_1, c_n1, c_2, c_n2, c_3, c_n3, c_tst1, c_tst2, c_tst3, z_1,
+			  deltat, Kd, k1, k2, lamd1, lamd2, rho_s, L, phi, frac, source1, **kwargs):
+		"""
+		nonlinear system of equations for first radionuclide with half life lamd1.
+		Includes 3 phases: dissolved, suspended, and sediment. The velocity term
+		is changed from u_ to z_1 as it uses the mixedfunctionspace velocity
+		from the shallow water equation. Everything else is kept same.
+		"""
+		# dissolved phase
+		Form = ((c_1 - c_n1) / deltat)*c_tst1*fd.dx \
+		+ fd.inner(fd.dot(z_1, fd.nabla_grad(c_1)), c_tst1)*fd.dx \
+		+ Kd*fd.dot(fd.grad(c_1), fd.grad(c_tst1))*fd.dx \
+		+ k1*c_1*c_tst1*fd.dx \
+		- k2*c_2*c_tst1*fd.dx \
+		- k2*c_3*L*rho_s*frac*phi*c_tst1*fd.dx \
+		+ lamd1*c_1*c_tst1*fd.dx \
+		- source1*c_tst1*fd.dx
+
+		# suspended phase
+		Form += ((c_2 - c_n2) / deltat)*c_tst2*fd.dx \
+		+ fd.inner(fd.dot(z_1, fd.nabla_grad(c_2)), c_tst2)*fd.dx \
+		+ Kd*fd.dot(fd.grad(c_2), fd.grad(c_tst2))*fd.dx \
+		- k1*c_1*c_tst2*fd.dx \
+		+ k2*c_2*c_tst2*fd.dx \
+		+ lamd1*c_2*c_tst2*fd.dx
+
+		# sediment phase
+		Form += ((c_3 - c_n3) / deltat)*c_tst3*fd.dx \
+		- (1./(L * rho_s * frac)) * k1*c_1*c_tst3*fd.dx \
+		+ k2*c_1*phi*c_tst3*fd.dx \
+		+ lamd1*c_3*c_tst3*fd.dx
+
+		return Form
+
+	def form2(self, d_1, d_n1, d_2, d_n2, d_3, d_n3, d_tst1, d_tst2, d_tst3, c_n1, c_n2,
+				z_1, c_n3, deltat, Kd, k1, k2, lamd1, lamd2, rho_s, L, phi, frac, source1, **kwargs):
+		"""
+		nonlinear system of equations for second radionuclide with half life lamd2.
+		Includes 3 phases: dissolved, suspended, and sediment. The velocity term
+		is changed from u_ to z_1 as it uses the mixedfunctionspace velocity
+		from the shallow water equation. Everything else is kept same.
+		"""
+		# dissolved phase
+		Form = ((d_1 - d_n1) / deltat)*d_tst1*fd.dx \
+		+ fd.inner(fd.dot(z_1, fd.nabla_grad(d_1)), d_tst1)*fd.dx \
+		+ Kd*fd.dot(fd.grad(d_1), fd.grad(d_tst1))*fd.dx \
+		+ k1*d_1*d_tst1*fd.dx \
+		- k2*d_2*d_tst1*fd.dx \
+		- k2*d_3*L*rho_s*frac*phi*d_tst1*fd.dx \
+		- lamd1*c_n1*d_tst1*fd.dx \
+		+ lamd2*d_1*d_tst1*fd.dx
+
+		# suspended phase
+		Form += ((d_2 - d_n2) / deltat)*d_tst2*fd.dx \
+		+ fd.inner(fd.dot(z_1, fd.nabla_grad(d_2)), d_tst2)*fd.dx \
 		+ Kd*fd.dot(fd.grad(d_2), fd.grad(d_tst2))*fd.dx \
 		- k1*d_1*d_tst2*fd.dx \
 		+ k2*d_2*d_tst2*fd.dx \
@@ -326,77 +434,5 @@ class depth_avg_hydro_flather(PDESubsystem):
 		+ A*fd.inner(fd.grad(u_mid)+fd.grad(u_mid).T, fd.grad(z_tst1))*fd.dx \
 		- A*(2./3.)*fd.inner(fd.div(u_mid)*fd.Identity(len(u_mid)), fd.grad(z_tst1))*fd.dx \
 		+ fd.dot(z_tst1, tau*magnitude/(H)*u_mid)*fd.dx
-
-		return Form
-
-class radio_transport_hydro(PDESubsystem):
-
-	def form1(self, c_1, c_n1, c_2, c_n2, c_3, c_n3, c_tst1, c_tst2, c_tst3, z_1,
-			  deltat, Kd, k1, k2, lamd1, lamd2, rho_s, L, phi, frac, source1, **kwargs):
-		"""
-		nonlinear system of equations for first radionuclide with half life lamd1.
-		Includes 3 phases: dissolved, suspended, and sediment. The velocity term
-		is changed from u_ to z_1 as it uses the mixedfunctionspace velocity
-		from the shallow water equation. Everything else is kept same.
-		"""
-		# dissolved phase
-		Form = ((c_1 - c_n1) / deltat)*c_tst1*fd.dx \
-		+ fd.inner(fd.dot(z_1, fd.nabla_grad(c_1)), c_tst1)*fd.dx \
-		+ Kd*fd.dot(fd.grad(c_1), fd.grad(c_tst1))*fd.dx \
-		+ k1*c_1*c_tst1*fd.dx \
-		- k2*c_2*c_tst1*fd.dx \
-		- k2*c_3*L*rho_s*frac*phi*c_tst1*fd.dx \
-		+ lamd1*c_1*c_tst1*fd.dx \
-		- source1*c_tst1*fd.dx
-
-		# suspended phase
-		Form += ((c_2 - c_n2) / deltat)*c_tst2*fd.dx \
-		+ fd.inner(fd.dot(z_1, fd.nabla_grad(c_2)), c_tst2)*fd.dx \
-		+ Kd*fd.dot(fd.grad(c_2), fd.grad(c_tst2))*fd.dx \
-		- k1*c_1*c_tst2*fd.dx \
-		+ k2*c_2*c_tst2*fd.dx \
-		+ lamd1*c_2*c_tst2*fd.dx
-
-		# sediment phase
-		Form += ((c_3 - c_n3) / deltat)*c_tst3*fd.dx \
-		- (1./(L * rho_s * frac)) * k1*c_1*c_tst3*fd.dx \
-		+ k2*c_1*phi*c_tst3*fd.dx \
-		+ lamd1*c_3*c_tst3*fd.dx
-
-		return Form
-
-	def form2(self, d_1, d_n1, d_2, d_n2, d_3, d_n3, d_tst1, d_tst2, d_tst3, c_n1, c_n2,
-				z_1, c_n3, deltat, Kd, k1, k2, lamd1, lamd2, rho_s, L, phi, frac, source1, **kwargs):
-		"""
-		nonlinear system of equations for second radionuclide with half life lamd2.
-		Includes 3 phases: dissolved, suspended, and sediment. The velocity term
-		is changed from u_ to z_1 as it uses the mixedfunctionspace velocity
-		from the shallow water equation. Everything else is kept same.
-		"""
-		# dissolved phase
-		Form = ((d_1 - d_n1) / deltat)*d_tst1*fd.dx \
-		+ fd.inner(fd.dot(z_1, fd.nabla_grad(d_1)), d_tst1)*fd.dx \
-		+ Kd*fd.dot(fd.grad(d_1), fd.grad(d_tst1))*fd.dx \
-		+ k1*d_1*d_tst1*fd.dx \
-		- k2*d_2*d_tst1*fd.dx \
-		- k2*d_3*L*rho_s*frac*phi*d_tst1*fd.dx \
-		- lamd1*c_n1*d_tst1*fd.dx \
-		+ lamd2*d_1*d_tst1*fd.dx
-
-		# suspended phase
-		Form += ((d_2 - d_n2) / deltat)*d_tst2*fd.dx \
-		+ fd.inner(fd.dot(z_1, fd.nabla_grad(d_2)), d_tst2)*fd.dx \
-		+ Kd*fd.dot(fd.grad(d_2), fd.grad(d_tst2))*fd.dx \
-		- k1*d_1*d_tst2*fd.dx \
-		+ k2*d_2*d_tst2*fd.dx \
-		- lamd1*c_n2*d_tst2*fd.dx \
-		+ lamd2*d_2*d_tst2*fd.dx
-
-		# sediment phase
-		Form += ((d_3 - d_n3) / deltat)*d_tst3*fd.dx \
-		- (1./(L * rho_s * frac)) * k1*d_1*d_tst3*fd.dx \
-		+ k2*d_1*phi*d_tst3*fd.dx \
-		- lamd1*c_n3*d_tst3*fd.dx \
-		+ lamd2*d_3*d_tst3*fd.dx
 
 		return Form
