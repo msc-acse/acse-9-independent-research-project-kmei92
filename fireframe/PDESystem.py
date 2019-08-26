@@ -814,12 +814,12 @@ class PDESystem:
 		# extract the 'str' or 'char' values of the symbol Symbols objects
 		# create a sorted list of these values, as they represent keys for Firedrake
 		# objects
-		free_symbols = expr.free_symbols
-		keys = list(map(str, list(free_symbols)))
+		symbols = expr.free_symbols
+		keys = list(map(str, list(symbols)))
 		keys.sort()
 
 		# create a function from the sympy expression
-		function = sy.lambdify(list(free_symbols), expr, f_dict)
+		function = sy.lambdify(list(symbols), expr, f_dict)
 
 		# for each mesh specified in the list
 		for mesh in meshes:
@@ -830,22 +830,22 @@ class PDESystem:
 			# obtain the x, y, and/or z coordinates of the mesh
 			coordinate = fd.SpatialCoordinate(self.mesh)
 			# create a list of these objects
-			initial_coordinate = list(coordinate)
-			final_coordinate = list(coordinate)
-			analytical = list(coordinate)
+			ini_args = list(coordinate) # create for initial
+			fin_args = list(coordinate) # create for final
+			an_args = list(coordinate) # create for analytical
 
 			if 't' in keys:
 				# add the time variables into the list
-				initial_coordinate.insert(0, fd.Constant(self.tstart))
-				final_coordinate.insert(0, fd.Constant(self.prm['T']))
+				ini_args.insert(0, fd.Constant(self.tstart))
+				fin_args.insert(0, fd.Constant(self.prm['T']))
 			# set initial time
 			self.t = fd.Constant(self.tstart)
-			analytical.insert(0, self.t)
+			an_args.insert(0, self.t)
 
 			# create a dictionary to be passed into the lambdified sympy function
-			function_ini = dict(zip(keys, initial_coordinate))
-			function_fin = dict(zip(keys, final_coordinate))
-			analytical_expr = function(**dict(zip(keys, analytical)))
+			ini_expr = dict(zip(keys, ini_args))
+			fin_expr = dict(zip(keys, fin_args))
+			analytical_expr = function(**dict(zip(keys, an_args)))
 
 			# reinitialize the function spaces and functions for each different mesh
 			self.setup_function_spaces(self.mesh, self.prm['degree'], self.prm['space'], self.prm['order'], self.prm['family'])
@@ -858,16 +858,19 @@ class PDESystem:
 				self.pdesubsystems[name].mesh = mesh
 				self.pdesubsystems[name].get_form(self.form_args, self.constants)
 			# interpolate the initial sympy function
-			self.form_args[var+'_n'].split()[index].interpolate(function(**function_ini))
+			if index is None:
+				self.form_args[var+'_n'].interpolate(function(**ini_expr))
+			else:
+				self.form_args[var+'_n'].split()[index].interpolate(function(**ini_expr))
 			# set up boundary conditions
 			self.setup_bcs()
 			# solve and obtain error
 			self.solve(time_update=True)
 			if index is None:
-				solution = fd.interpolate(function(**function_fin), self.V[var])
+				solution = fd.interpolate(function(**fin_expr), self.V[var])
 				self.error.append(fd.errornorm(solution, self.form_args[var+'_n']))
 			else:
-				solution = fd.interpolate(function(**function_fin), self.V[var][index])
+				solution = fd.interpolate(function(**fin_expr), self.V[var][index])
 				self.error.append(fd.errornorm(solution, self.form_args[var+'_n'].split()[index]))
 
 
@@ -896,42 +899,30 @@ class PDESystem:
 		# extract the 'str' or 'char' values of the symbol Symbols objects
 		# create a sorted list of these values, as they represent keys for Firedrake
 		# objects
-		if isinstance(expr, tuple):
-			functions = []
-			for i in range(len(expr)):
-				all_symbols = expr[i-1].free_symbols.union(expr[i].free_symbols)
-			print(list(all_symbols))
 
-			keys = list(map(str, list(all_symbols)))
-			keys.sort()
-			print(keys)
+		symbols = expr.free_symbols
+		keys = list(map(str, list(symbols)))
+		keys.sort()
 
-			for sub_expr in expr:
-				functions.append(sy.lambdify(list(all_symbols), sub_expr, f_dict))
-		else:
-			free_symbols = expr.free_symbols
-			keys = list(map(str, list(free_symbols)))
-			keys.sort()
-			# create a function from the sympy expression
-			function = sy.lambdify(list(free_symbols), expr, f_dict)
+		# create a function from the sympy expression
+		function = sy.lambdify(list(symbols), expr, f_dict)
 
 		# obtain the x, y, and/or z coordinates of the mesh
 		coordinate = fd.SpatialCoordinate(self.mesh)
 		# create a list of these objects
-		initial_coordinate = list(coordinate)
-		final_coordinate = list(coordinate)
-		analytical_coordinate = list(coordinate)
+		ini_args = list(coordinate)
+		fin_args = list(coordinate)
+		an_args = list(coordinate)
 
 		if 't' in keys:
 			# add the time variables into the list
-			initial_coordinate.insert(0, fd.Constant(self.tstart))
-			final_coordinate.insert(0, fd.Constant(self.prm['T']))
+			ini_args.insert(0, fd.Constant(self.tstart))
+			fin_args.insert(0, fd.Constant(self.prm['T']))
 
 		# create a dictionary to be passed into the lambdified sympy function
-		ini_args = dict(zip(keys, initial_coordinate))
-		fin_args = dict(zip(keys, final_coordinate))
+		ini_expr = dict(zip(keys, ini_args))
+		fin_expr = dict(zip(keys, fin_args))
 
-		print(functions)
 		old_dt = self.dt
 		# for each timestep value
 		for deltat in dt_list:
@@ -941,49 +932,32 @@ class PDESystem:
 			self.prm = recursive_update(self.prm, {'dt':deltat})
 			self.t = fd.Constant(self.tstart)
 			# reinitialize the function spaces and functions for each different mesh
-			self.refresh()
+			self.setup_function_spaces(self.mesh, self.prm['degree'], self.prm['space'], self.prm['order'], self.prm['family'])
+			self.setup_trial_test(self.prm['order'], self.prm['space'])
+			self.setup_form_args(self.prm['order'], self.prm['space'])
 
-			if 't' in keys:
-				analytical_coordinate.insert(0, self.t)
-			analytical_args = dict(zip(keys, analytical_coordinate))
+			an_args = list(coordinate)
+			an_args.insert(0, self.t)
+			analytical_expr = function(**dict(zip(keys, an_args)))
 
-			if isinstance(expr, tuple):
-				initial_vector = []
-				final_vector = []
-				analytical_vector = []
-				for i, sub_expr in enumerate(expr):
-					initial_vector.append(functions[i](**ini_args))
-					final_vector.append(functions[i](**fin_args))
-					analytical_vector.append(functions[i](**analytical_args))
-
-			# analytical_expr = function(**dict(zip(keys, analytical)))
-
-			if isinstance(expr, tuple):
-				self.form_args.update(dict([('analytical', fd.as_vector(analytical_vector))]))
-			else:
-				self.form_args.update(dict([('analytical', function(**analytical_args))]))
+			self.form_args.update(dict([('analytical', analytical_expr)]))
 			self.setup_constants()
 			for name in self.system_names:
 				self.pdesubsystems[name].get_form(self.form_args, self.constants)
-
 			# interpolate the initial sympy function
-			if isinstance(expr, tuple):
-				self.form_args[var+'_n'].interpolate(fd.as_vector(initial_vector))
+			if index is None:
+				self.form_args[var+'_n'].interpolate(function(**ini_expr))
 			else:
-				self.form_args[var+'_n'].split()[index].interpolate(function(**ini_args))
-
+				self.form_args[var+'_n'].split()[index].interpolate(function(**ini_expr))
 			# set up boundary conditions
 			self.setup_bcs()
 			# solve and obtain error
 			self.solve(time_update=True)
 			if index is None:
-				if isinstance(expr, tuple):
-					solution = fd.interpolate(fd.as_vector(final_vector), self.V[var])
-				else:
-					solution = fd.interpolate(function(**fin_args), self.V[var])
+				solution = fd.interpolate(function(**fin_expr), self.V[var])
 				self.error.append(fd.errornorm(solution, self.form_args[var+'_n']))
 			else:
-				solution = fd.interpolate(function(**fin_args), self.V[var][index])
+				solution = fd.interpolate(function(**fin_expr), self.V[var][index])
 				self.error.append(fd.errornorm(solution, self.form_args[var+'_n'].split()[index]))
 
 	def view_args(self):
