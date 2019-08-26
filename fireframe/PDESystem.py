@@ -536,6 +536,8 @@ class PDESystem:
 		# if there is a time updated condition and boundaries need to be updated
 		if time_update:
 			while tstart < tend:
+				# print(tstart)
+				# print(boundaries)
 				# solve current timestep variables
 				# use the abacus function again in order to keep track of
 				# repeated variables and boundary conditions
@@ -550,15 +552,26 @@ class PDESystem:
 					# check if boundary conditions need to be updated
 					for j in range(len(self.V[var])):
 						index = abacus[var] * len(self.V[var]) + j
+						# check to see if boundaries need to be updated
 						if self.bc[var][index][-1] == 'update':
-							# if a MixedFunctionSpace, check to see which subspaces
-							# require a boundary condition and update
-							if len(self.V[var]) > 1 and len(boundaries[i]) > 1:
-								boundaries[i][j] = fd.DirichletBC(self.V[var].sub(self.bc[var][index][3]), self.bc[var][index][1], self.bc[var][index][2])
-							elif len(self.V[var]) > 1 and len(boundaries[i]) == 1:
-								boundaries[i] = [fd.DirichletBC(self.V[var].sub(self.bc[var][index][3]), self.bc[var][index][1], self.bc[var][index][2])]
+							# check to see how many different boundaries need to be applied
+							if isinstance(self.bc[var][index][1], list):
+								# check to see user has input correct boundary specs
+								if len(self.V[var]) > 1:
+									assert len(self.bc[var][index][1]) == len(self.bc[var][index][2]) and len(self.bc[var][index][2]) == len(self.bc[var][index][3])
+									boundaries[i] = list(fd.DirichletBC(self.V[var].sub(self.bc[var][index][3][k]), self.bc[var][index][1][k], self.bc[var][index][2][k]) for k in range(len(self.bc[var][index][2])))
+								else:
+									assert len(self.bc[var][index][1]) == len(self.bc[var][index][2])
+									boundaries[i] = list(fd.DirichletBC(self.V[var], self.bc[var][index][1][k], self.bc[var][index][2][k]) for k in range(len(self.bc[var][index][2])))
 							else:
-								boundaries[i] = [fd.DirichletBC(self.V[var], self.bc[var][index][1], self.bc[var][index][2])]
+								# if a MixedFunctionSpace, check to see which subspaces
+								# require a boundary condition and update
+								if len(self.V[var]) > 1 and len(boundaries[i]) > 1:
+									boundaries[i][j] = fd.DirichletBC(self.V[var].sub(self.bc[var][index][3]), self.bc[var][index][1], self.bc[var][index][2])
+								elif len(self.V[var]) > 1 and len(boundaries[i]) == 1:
+									boundaries[i] = [fd.DirichletBC(self.V[var].sub(self.bc[var][index][3]), self.bc[var][index][1], self.bc[var][index][2])]
+								else:
+									boundaries[i] = [fd.DirichletBC(self.V[var], self.bc[var][index][1], self.bc[var][index][2])]
 					abacus[var] += 1
 				for var in self.var_seq:
 					# assign next timestep variables
@@ -723,7 +736,7 @@ class PDESystem:
 		# initialize the subsystem dictionary with PDESubsystem objects
 		self.pdesubsystems[name] = subsystem(vars(self), var_seq)
 
-	def test_mms(self, var, c_exact, spatial=False, temporal=False, f_dict = {}, dt_list=[], meshes=[], plot=False, index=None):
+	def test_mms(self, var, expr, spatial=False, temporal=False, f_dict = {}, dt_list=[], meshes=[], plot=False, index=None):
 		"""
 		Description
 		This function allows users to test a PDESystem's variable by asking for a manufactured
@@ -733,8 +746,8 @@ class PDESystem:
 		:params var: the variable that will be tested in the MMS. ex. 'cd'
 		:type var: `char` or `str`
 
-		:params c_exact: an expression used to express the analytical manufactured "solution"
-		:type c_exact: `sympy expression / equation`
+		:params expr: an expression used to express the analytical manufactured "solution"
+		:type expr: `sympy expression / equation`
 
 		:params spatial: a boolean switch to determine if the mms test is against dt
 		:type spatial: `bool`
@@ -762,21 +775,21 @@ class PDESystem:
 		if spatial:
 			self.dx_array = []
 			self.error = []
-			self.dx_test(var, c_exact, meshes, f_dict, index)
+			self.dx_test(var, expr, meshes, f_dict, index)
 			if plot:
 				plot_error(self.dx_array, self.error, 'x')
 		# if users select error vs. dt
 		elif temporal:
 			self.dt_array = []
 			self.error = []
-			self.dt_test(var, c_exact, dt_list, f_dict, index)
+			self.dt_test(var, expr, dt_list, f_dict, index)
 			if plot:
 				plot_error(self.dt_array, self.error, 't')
 		# no tests specified
 		else:
 			print("no convergence criteria specified")
 
-	def dx_test(self, var, c_exact, meshes, f_dict, index):
+	def dx_test(self, var, expr, meshes, f_dict, index):
 		"""
 		Description:
 
@@ -786,8 +799,8 @@ class PDESystem:
 		:params var: the variable that will be tested in the MMS. ex. 'cd'
 		:type var: `char` or `str`
 
-		:params c_exact: an expression used to express the analytical manufactured "solution"
-		:type c_exact: `sympy expression / equation`
+		:params expr: an expression used to express the analytical manufactured "solution"
+		:type expr: `sympy expression / equation`
 
 		:params f_dict: this dictionary converts sympy functions into firedrake functions. Keys are strings representing sympy expressions and values are firedrake functions ex. {'exp' : fd.exp}
 		:type f_dict: `dictionary`
@@ -801,12 +814,12 @@ class PDESystem:
 		# extract the 'str' or 'char' values of the symbol Symbols objects
 		# create a sorted list of these values, as they represent keys for Firedrake
 		# objects
-		free_symbols = c_exact.free_symbols
+		free_symbols = expr.free_symbols
 		keys = list(map(str, list(free_symbols)))
 		keys.sort()
 
 		# create a function from the sympy expression
-		function = sy.lambdify(list(free_symbols), c_exact, f_dict)
+		function = sy.lambdify(list(free_symbols), expr, f_dict)
 
 		# for each mesh specified in the list
 		for mesh in meshes:
@@ -814,27 +827,31 @@ class PDESystem:
 			self.mesh = mesh
 			# get the dx value of the mesh
 			self.dx_array.append(get_dx(mesh))
-
 			# obtain the x, y, and/or z coordinates of the mesh
 			coordinate = fd.SpatialCoordinate(self.mesh)
 			# create a list of these objects
 			initial_coordinate = list(coordinate)
 			final_coordinate = list(coordinate)
+			analytical = list(coordinate)
+
 			if 't' in keys:
 				# add the time variables into the list
 				initial_coordinate.insert(0, fd.Constant(self.tstart))
 				final_coordinate.insert(0, fd.Constant(self.prm['T']))
+			# set initial time
+			self.t = fd.Constant(self.tstart)
+			analytical.insert(0, self.t)
 
 			# create a dictionary to be passed into the lambdified sympy function
 			function_ini = dict(zip(keys, initial_coordinate))
 			function_fin = dict(zip(keys, final_coordinate))
-			# set initial time
-			self.t = fd.Constant(self.tstart)
+			analytical_expr = function(**dict(zip(keys, analytical)))
 
 			# reinitialize the function spaces and functions for each different mesh
 			self.setup_function_spaces(self.mesh, self.prm['degree'], self.prm['space'], self.prm['order'], self.prm['family'])
 			self.setup_trial_test(self.prm['order'], self.prm['space'])
 			self.setup_form_args(self.prm['order'], self.prm['space'])
+			self.form_args.update(dict([('analytical', analytical_expr)]))
 			self.setup_constants()
 			# reinitialize the PDESubsystems with new mesh arguments
 			for name in self.system_names:
@@ -854,7 +871,7 @@ class PDESystem:
 				self.error.append(fd.errornorm(solution, self.form_args[var+'_n'].split()[index]))
 
 
-	def dt_test(self, var, c_exact, dt_list, f_dict, index):
+	def dt_test(self, var, expr, dt_list, f_dict, index):
 		"""
 		Description:
 
@@ -864,8 +881,8 @@ class PDESystem:
 		:params var: the variable that will be tested in the MMS. ex. 'cd'
 		:type var: `char` or `str`
 
-		:params c_exact: an expression used to express the analytical manufactured "solution"
-		:type c_exact: `sympy expression / equation`
+		:params expr: an expression used to express the analytical manufactured "solution"
+		:type expr: `sympy expression / equation`
 
 		:params f_dict: this dictionary converts sympy functions into firedrake functions. Keys are strings representing sympy expressions and values are firedrake functions ex. {'exp' : fd.exp}
 		:type f_dict: `dictionary`
@@ -879,26 +896,42 @@ class PDESystem:
 		# extract the 'str' or 'char' values of the symbol Symbols objects
 		# create a sorted list of these values, as they represent keys for Firedrake
 		# objects
-		free_symbols = c_exact.free_symbols
-		keys = list(map(str, list(free_symbols)))
-		keys.sort()
+		if isinstance(expr, tuple):
+			for i in range(len(expr)):
+				all_symbols = expr[i-1].free_symbols.union(expr[i].free_symbols)
+			print(list(all_symbols))
+
+			keys = list(map(str, list(all_symbols)))
+			keys.sort()
+			print(keys)
+			return
+
+		else:
+			free_symbols = expr.free_symbols
+			keys = list(map(str, list(free_symbols)))
+			keys.sort()
+
 
 		# create a function from the sympy expression
-		function = sy.lambdify(list(free_symbols), c_exact, f_dict)
+		function = sy.lambdify(list(free_symbols), expr, f_dict)
 
 		# obtain the x, y, and/or z coordinates of the mesh
 		coordinate = fd.SpatialCoordinate(self.mesh)
 		# create a list of these objects
 		initial_coordinate = list(coordinate)
 		final_coordinate = list(coordinate)
+		analytical = list(coordinate)
+
 		if 't' in keys:
 			# add the time variables into the list
 			initial_coordinate.insert(0, fd.Constant(self.tstart))
 			final_coordinate.insert(0, fd.Constant(self.prm['T']))
 
+
 		# create a dictionary to be passed into the lambdified sympy function
 		function_ini = dict(zip(keys, initial_coordinate))
 		function_fin = dict(zip(keys, final_coordinate))
+
 
 		old_dt = self.dt
 		# for each timestep value
@@ -912,6 +945,12 @@ class PDESystem:
 			self.setup_function_spaces(self.mesh, self.prm['degree'], self.prm['space'], self.prm['order'], self.prm['family'])
 			self.setup_trial_test(self.prm['order'], self.prm['space'])
 			self.setup_form_args(self.prm['order'], self.prm['space'])
+
+			analytical = list(coordinate)
+			analytical.insert(0, self.t)
+			analytical_expr = function(**dict(zip(keys, analytical)))
+
+			self.form_args.update(dict([('analytical', analytical_expr)]))
 			self.setup_constants()
 			for name in self.system_names:
 				self.pdesubsystems[name].get_form(self.form_args, self.constants)
