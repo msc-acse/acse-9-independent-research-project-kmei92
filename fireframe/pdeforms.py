@@ -32,7 +32,7 @@ expressions of the manufactured solution
 radio_transport_hydro: contains the nonlinear form of 2 radionuclide 3 phase
 transfer transport equations coupled to the shallow water equation
 
-temp_poisson: contains the nonlinear form of the poissons equation
+temp_poisson: contains the nonlinear form of the time varying temperature diffusion equation.
 
 depth_avg_hydro: contains the nonlinear form of the
 no normal boundary condition shallow water equation
