@@ -553,7 +553,140 @@ in the Fireframe project. These forms serve as inspiration and coupling tools fo
 399
 400
 401
-402</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464
+465
+466
+467
+468
+469
+470
+471
+472
+473
+474
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+486
+487
+488
+489
+490
+491
+492
+493
+494
+495
+496
+497
+498
+499
+500
+501
+502
+503
+504
+505
+506
+507
+508
+509
+510
+511
+512
+513
+514
+515
+516
+517
+518
+519
+520
+521
+522
+523
+524
+525
+526
+527
+528
+529
+530
+531
+532
+533
+534
+535</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">author : Keer Mei</span>
 <span class="sd">email: keer.mei18@imperial.ac.uk</span>
 <span class="sd">github username: kmei92</span>
@@ -561,6 +694,40 @@ in the Fireframe project. These forms serve as inspiration and coupling tools fo
 
 <span class="kn">from</span> <span class="nn">.PDESubsystem</span> <span class="k">import</span> <span class="o">*</span>
 
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains all the variational forms for the demontration problems</span>
+<span class="sd">in Fireframe. They are all written in Firedrake syntax.</span>
+
+<span class="sd">navier_stokes: contains the three forms of Chorin&#39;s scheme</span>
+
+<span class="sd">reactions: contains the nonlinear form of 3 chemicals first order reaction</span>
+
+<span class="sd">reactions_uncoupled: contains 3 linear forms of 3 chemicals first order reaction</span>
+
+<span class="sd">radio_transport_coupled: contains the nonlinear form of 2 radionuclide 3 phase</span>
+<span class="sd">transfer transport equations coupled to the navier stokes equation</span>
+
+<span class="sd">radio_transport_coupled_mms: contains the nonlinear form of the</span>
+<span class="sd">radionuclide transport equations with a manufcatured solution to the dissolved</span>
+<span class="sd">phase radionuclide 1 specific activity. Manufactured solution is obtained by hand</span>
+<span class="sd">differentiation of manufactured solution.</span>
+
+<span class="sd">radio_transport_coupled_mms_ufl: contains the nonlinear form of the</span>
+<span class="sd">radionuclide transport equations with a manufcatured solution to the dissolved</span>
+<span class="sd">phase radionuclide 1 specific activity. Manufactured solution is obtained by UFL</span>
+<span class="sd">expressions of the manufactured solution</span>
+
+<span class="sd">radio_transport_hydro: contains the nonlinear form of 2 radionuclide 3 phase</span>
+<span class="sd">transfer transport equations coupled to the shallow water equation</span>
+
+<span class="sd">temp_poisson: contains the nonlinear form of the poissons equation</span>
+
+<span class="sd">depth_avg_hydro: contains the nonlinear form of the</span>
+<span class="sd">no normal boundary condition shallow water equation</span>
+
+<span class="sd">depth_avg_hydro_flather: contains the nonlinear form of the</span>
+<span class="sd">flather boundary condition shallow water equation</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="k">class</span> <span class="nc">navier_stokes</span><span class="p">(</span><span class="n">PDESubsystem</span><span class="p">):</span>
 
 	<span class="k">def</span> <span class="nf">form1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_trl</span><span class="p">,</span> <span class="n">u_tst</span><span class="p">,</span> <span class="n">u_n</span><span class="p">,</span> <span class="n">p_n</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">deltat</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">nu</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -743,6 +910,7 @@ in the Fireframe project. These forms serve as inspiration and coupling tools fo
 <span class="sd">		manufactured equation for nonlinear system of equations for first radionuclide with half life lamd1.</span>
 <span class="sd">		Includes 3 phases: dissolved, suspended, and sediment. Includes an extra source term.</span>
 <span class="sd">		&quot;&quot;&quot;</span>
+
 		<span class="c1"># manufactured source term</span>
 		<span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">SpatialCoordinate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
 		<span class="n">c_source</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">y</span><span class="o">*</span><span class="n">t</span><span class="p">)</span>
@@ -750,7 +918,8 @@ in the Fireframe project. These forms serve as inspiration and coupling tools fo
 		<span class="n">grad_c</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">as_vector</span><span class="p">((</span><span class="n">y</span><span class="o">*</span><span class="n">t</span><span class="o">*</span><span class="n">c_source</span><span class="p">,</span> <span class="n">x</span><span class="o">*</span><span class="n">t</span><span class="o">*</span><span class="n">c_source</span><span class="p">))</span>
 		<span class="n">laplace_c</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span><span class="o">*</span><span class="n">t</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">c_source</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">t</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">c_source</span>
 		<span class="n">source1</span> <span class="o">=</span> <span class="n">dc_dt</span> <span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u_</span><span class="p">,</span> <span class="n">grad_c</span><span class="p">)</span> <span class="o">-</span> <span class="n">Kd</span><span class="o">*</span><span class="n">laplace_c</span> <span class="o">+</span> <span class="n">k1</span><span class="o">*</span><span class="n">c_source</span> <span class="o">+</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_source</span>
-		<span class="n">source2</span> <span class="o">=</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_source</span>
+		<span class="n">source2</span> <span class="o">=</span> <span class="o">-</span><span class="n">k1</span><span class="o">*</span><span class="n">c_source</span>
+		<span class="n">source3</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="n">L</span> <span class="o">*</span> <span class="n">rho_s</span> <span class="o">*</span> <span class="n">frac</span><span class="p">))</span> <span class="o">*</span> <span class="n">k1</span> <span class="o">*</span> <span class="n">c_source</span> <span class="o">+</span> <span class="n">k2</span><span class="o">*</span><span class="n">phi</span><span class="o">*</span><span class="n">c_source</span>
 
 		<span class="c1"># dissolved phase</span>
 		<span class="n">Form</span> <span class="o">=</span> <span class="p">((</span><span class="n">c_1</span> <span class="o">-</span> <span class="n">c_n1</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
@@ -768,6 +937,173 @@ in the Fireframe project. These forms serve as inspiration and coupling tools fo
 		<span class="o">+</span> <span class="n">Kd</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">c_2</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">c_tst2</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
 		<span class="o">-</span> <span class="n">k1</span><span class="o">*</span><span class="n">c_1</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
 		<span class="o">+</span> <span class="n">k2</span><span class="o">*</span><span class="n">c_2</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_2</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">source2</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
+
+		<span class="c1"># sediment phase</span>
+		<span class="n">Form</span> <span class="o">+=</span> <span class="p">((</span><span class="n">c_3</span> <span class="o">-</span> <span class="n">c_n3</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">c_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="n">L</span> <span class="o">*</span> <span class="n">rho_s</span> <span class="o">*</span> <span class="n">frac</span><span class="p">))</span> <span class="o">*</span> <span class="n">k1</span><span class="o">*</span><span class="n">c_1</span><span class="o">*</span><span class="n">c_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">k2</span><span class="o">*</span><span class="n">c_1</span><span class="o">*</span><span class="n">phi</span><span class="o">*</span><span class="n">c_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_3</span><span class="o">*</span><span class="n">c_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">source3</span><span class="o">*</span><span class="n">c_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
+
+		<span class="k">return</span> <span class="n">Form</span>
+
+	<span class="k">def</span> <span class="nf">form2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d_1</span><span class="p">,</span> <span class="n">d_n1</span><span class="p">,</span> <span class="n">d_2</span><span class="p">,</span> <span class="n">d_n2</span><span class="p">,</span> <span class="n">d_3</span><span class="p">,</span> <span class="n">d_n3</span><span class="p">,</span> <span class="n">d_tst1</span><span class="p">,</span> <span class="n">d_tst2</span><span class="p">,</span> <span class="n">d_tst3</span><span class="p">,</span> <span class="n">c_n1</span><span class="p">,</span> <span class="n">c_n2</span><span class="p">,</span>
+				<span class="n">u_</span><span class="p">,</span> <span class="n">c_n3</span><span class="p">,</span> <span class="n">deltat</span><span class="p">,</span> <span class="n">Kd</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">lamd1</span><span class="p">,</span> <span class="n">lamd2</span><span class="p">,</span> <span class="n">rho_s</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">frac</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		manufactured equation for nonlinear system of equations for second radionuclide with half life lamd2.</span>
+<span class="sd">		Includes 3 phases: dissolved, suspended, and sediment. No source term.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="c1"># manufactured source term</span>
+		<span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">SpatialCoordinate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
+		<span class="n">c_source</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">y</span><span class="o">*</span><span class="n">t</span><span class="p">)</span>
+		<span class="n">source1</span> <span class="o">=</span> <span class="o">-</span><span class="n">lamd1</span><span class="o">*</span><span class="n">c_source</span>
+
+		<span class="c1"># dissolved phase</span>
+		<span class="n">Form</span> <span class="o">=</span> <span class="p">((</span><span class="n">d_1</span> <span class="o">-</span> <span class="n">d_n1</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u_</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">nabla_grad</span><span class="p">(</span><span class="n">d_1</span><span class="p">)),</span> <span class="n">d_tst1</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">Kd</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">d_1</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">d_tst1</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">k1</span><span class="o">*</span><span class="n">d_1</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">k2</span><span class="o">*</span><span class="n">d_2</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">k2</span><span class="o">*</span><span class="n">d_3</span><span class="o">*</span><span class="n">L</span><span class="o">*</span><span class="n">rho_s</span><span class="o">*</span><span class="n">frac</span><span class="o">*</span><span class="n">phi</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_n1</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">lamd2</span><span class="o">*</span><span class="n">d_1</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">source1</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
+
+		<span class="c1"># suspended phase</span>
+		<span class="n">Form</span> <span class="o">+=</span> <span class="p">((</span><span class="n">d_2</span> <span class="o">-</span> <span class="n">d_n2</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u_</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">nabla_grad</span><span class="p">(</span><span class="n">d_2</span><span class="p">)),</span> <span class="n">d_tst2</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">Kd</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">d_2</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">d_tst2</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">k1</span><span class="o">*</span><span class="n">d_1</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">k2</span><span class="o">*</span><span class="n">d_2</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_n2</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">lamd2</span><span class="o">*</span><span class="n">d_2</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
+
+		<span class="c1"># sediment phase</span>
+		<span class="n">Form</span> <span class="o">+=</span> <span class="p">((</span><span class="n">d_3</span> <span class="o">-</span> <span class="n">d_n3</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">d_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="n">L</span> <span class="o">*</span> <span class="n">rho_s</span> <span class="o">*</span> <span class="n">frac</span><span class="p">))</span> <span class="o">*</span> <span class="n">k1</span><span class="o">*</span><span class="n">d_1</span><span class="o">*</span><span class="n">d_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">k2</span><span class="o">*</span><span class="n">d_1</span><span class="o">*</span><span class="n">phi</span><span class="o">*</span><span class="n">d_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_n3</span><span class="o">*</span><span class="n">d_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">lamd2</span><span class="o">*</span><span class="n">d_3</span><span class="o">*</span><span class="n">d_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
+
+		<span class="k">return</span> <span class="n">Form</span>
+
+<span class="k">class</span> <span class="nc">radio_transport_coupled_mms_ufl</span><span class="p">(</span><span class="n">PDESubsystem</span><span class="p">):</span>
+
+	<span class="k">def</span> <span class="nf">form1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_1</span><span class="p">,</span> <span class="n">c_n1</span><span class="p">,</span> <span class="n">c_2</span><span class="p">,</span> <span class="n">c_n2</span><span class="p">,</span> <span class="n">c_3</span><span class="p">,</span> <span class="n">c_n3</span><span class="p">,</span> <span class="n">c_tst1</span><span class="p">,</span> <span class="n">c_tst2</span><span class="p">,</span> <span class="n">c_tst3</span><span class="p">,</span> <span class="n">u_</span><span class="p">,</span>
+			  <span class="n">deltat</span><span class="p">,</span> <span class="n">Kd</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">lamd1</span><span class="p">,</span> <span class="n">lamd2</span><span class="p">,</span> <span class="n">rho_s</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">frac</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		manufactured equation for nonlinear system of equations for first radionuclide with half life lamd1.</span>
+<span class="sd">		Includes 3 phases: dissolved, suspended, and sediment. Includes an extra source term.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+
+		<span class="c1"># dissolved phase</span>
+		<span class="n">Form</span> <span class="o">=</span> <span class="p">((</span><span class="n">c_1</span> <span class="o">-</span> <span class="n">c_n1</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u_</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">nabla_grad</span><span class="p">(</span><span class="n">c_1</span><span class="p">)),</span> <span class="n">c_tst1</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">Kd</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">c_1</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">c_tst1</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">k1</span><span class="o">*</span><span class="n">c_1</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">k2</span><span class="o">*</span><span class="n">c_2</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">k2</span><span class="o">*</span><span class="n">c_3</span><span class="o">*</span><span class="n">L</span><span class="o">*</span><span class="n">rho_s</span><span class="o">*</span><span class="n">frac</span><span class="o">*</span><span class="n">phi</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_1</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">source1</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
+
+		<span class="c1"># suspended phase</span>
+		<span class="n">Form</span> <span class="o">+=</span> <span class="p">((</span><span class="n">c_2</span> <span class="o">-</span> <span class="n">c_n2</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u_</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">nabla_grad</span><span class="p">(</span><span class="n">c_2</span><span class="p">)),</span> <span class="n">c_tst2</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">Kd</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">c_2</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">c_tst2</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">k1</span><span class="o">*</span><span class="n">c_1</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">k2</span><span class="o">*</span><span class="n">c_2</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_2</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">source2</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
+
+		<span class="c1"># sediment phase</span>
+		<span class="n">Form</span> <span class="o">+=</span> <span class="p">((</span><span class="n">c_3</span> <span class="o">-</span> <span class="n">c_n3</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">c_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="n">L</span> <span class="o">*</span> <span class="n">rho_s</span> <span class="o">*</span> <span class="n">frac</span><span class="p">))</span> <span class="o">*</span> <span class="n">k1</span><span class="o">*</span><span class="n">c_1</span><span class="o">*</span><span class="n">c_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">k2</span><span class="o">*</span><span class="n">c_1</span><span class="o">*</span><span class="n">phi</span><span class="o">*</span><span class="n">c_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_3</span><span class="o">*</span><span class="n">c_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">source3</span><span class="o">*</span><span class="n">c_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
+
+		<span class="k">if</span> <span class="s1">&#39;analytical&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+			<span class="n">dc_dt</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;analytical&#39;</span><span class="p">],</span> <span class="n">t</span><span class="p">)</span>
+			<span class="n">grad_c</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;analytical&#39;</span><span class="p">])</span>
+			<span class="n">laplace</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;analytical&#39;</span><span class="p">]))</span>
+			<span class="n">source1</span> <span class="o">=</span> <span class="n">dc_dt</span> <span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u_</span><span class="p">,</span> <span class="n">grad_c</span><span class="p">)</span> <span class="o">-</span> <span class="n">Kd</span><span class="o">*</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;analytical&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">k1</span><span class="o">*</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;analytical&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;analytical&#39;</span><span class="p">]</span>
+			<span class="n">source2</span> <span class="o">=</span> <span class="o">-</span><span class="n">k1</span> <span class="o">*</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;analytical&#39;</span><span class="p">]</span>
+			<span class="n">source3</span> <span class="o">=</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="n">L</span> <span class="o">*</span> <span class="n">rho_s</span> <span class="o">*</span> <span class="n">frac</span><span class="p">))</span><span class="o">*</span><span class="n">k1</span><span class="o">*</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;analytical&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">k2</span><span class="o">*</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;analytical&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">phi</span>
+			<span class="n">Form</span> <span class="o">+=</span> <span class="o">-</span><span class="n">source1</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>\
+			<span class="o">-</span><span class="n">source2</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>\
+			<span class="o">-</span><span class="n">source3</span><span class="o">*</span><span class="n">c_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
+
+
+		<span class="k">return</span> <span class="n">Form</span>
+
+	<span class="k">def</span> <span class="nf">form2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d_1</span><span class="p">,</span> <span class="n">d_n1</span><span class="p">,</span> <span class="n">d_2</span><span class="p">,</span> <span class="n">d_n2</span><span class="p">,</span> <span class="n">d_3</span><span class="p">,</span> <span class="n">d_n3</span><span class="p">,</span> <span class="n">d_tst1</span><span class="p">,</span> <span class="n">d_tst2</span><span class="p">,</span> <span class="n">d_tst3</span><span class="p">,</span> <span class="n">c_n1</span><span class="p">,</span> <span class="n">c_n2</span><span class="p">,</span>
+				<span class="n">u_</span><span class="p">,</span> <span class="n">c_n3</span><span class="p">,</span> <span class="n">deltat</span><span class="p">,</span> <span class="n">Kd</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">lamd1</span><span class="p">,</span> <span class="n">lamd2</span><span class="p">,</span> <span class="n">rho_s</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">frac</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		manufactured equation for nonlinear system of equations for second radionuclide with half life lamd2.</span>
+<span class="sd">		Includes 3 phases: dissolved, suspended, and sediment. No source term.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+
+		<span class="c1"># dissolved phase</span>
+		<span class="n">Form</span> <span class="o">=</span> <span class="p">((</span><span class="n">d_1</span> <span class="o">-</span> <span class="n">d_n1</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u_</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">nabla_grad</span><span class="p">(</span><span class="n">d_1</span><span class="p">)),</span> <span class="n">d_tst1</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">Kd</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">d_1</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">d_tst1</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">k1</span><span class="o">*</span><span class="n">d_1</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">k2</span><span class="o">*</span><span class="n">d_2</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">k2</span><span class="o">*</span><span class="n">d_3</span><span class="o">*</span><span class="n">L</span><span class="o">*</span><span class="n">rho_s</span><span class="o">*</span><span class="n">frac</span><span class="o">*</span><span class="n">phi</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_n1</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">lamd2</span><span class="o">*</span><span class="n">d_1</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+
+		<span class="c1"># suspended phase</span>
+		<span class="n">Form</span> <span class="o">+=</span> <span class="p">((</span><span class="n">d_2</span> <span class="o">-</span> <span class="n">d_n2</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u_</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">nabla_grad</span><span class="p">(</span><span class="n">d_2</span><span class="p">)),</span> <span class="n">d_tst2</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">Kd</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">d_2</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">d_tst2</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">k1</span><span class="o">*</span><span class="n">d_1</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">k2</span><span class="o">*</span><span class="n">d_2</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_n2</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">lamd2</span><span class="o">*</span><span class="n">d_2</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
+
+		<span class="c1"># sediment phase</span>
+		<span class="n">Form</span> <span class="o">+=</span> <span class="p">((</span><span class="n">d_3</span> <span class="o">-</span> <span class="n">d_n3</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">d_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="n">L</span> <span class="o">*</span> <span class="n">rho_s</span> <span class="o">*</span> <span class="n">frac</span><span class="p">))</span> <span class="o">*</span> <span class="n">k1</span><span class="o">*</span><span class="n">d_1</span><span class="o">*</span><span class="n">d_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">k2</span><span class="o">*</span><span class="n">d_1</span><span class="o">*</span><span class="n">phi</span><span class="o">*</span><span class="n">d_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_n3</span><span class="o">*</span><span class="n">d_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">lamd2</span><span class="o">*</span><span class="n">d_3</span><span class="o">*</span><span class="n">d_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
+
+		<span class="k">if</span> <span class="s1">&#39;analytical&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+			<span class="n">source1</span> <span class="o">=</span> <span class="o">-</span><span class="n">lamd1</span><span class="o">*</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;analytical&#39;</span><span class="p">]</span>
+			<span class="n">Form</span> <span class="o">+=</span> <span class="o">-</span><span class="n">source1</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
+
+		<span class="k">return</span> <span class="n">Form</span>
+
+<span class="k">class</span> <span class="nc">radio_transport_hydro</span><span class="p">(</span><span class="n">PDESubsystem</span><span class="p">):</span>
+
+	<span class="k">def</span> <span class="nf">form1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_1</span><span class="p">,</span> <span class="n">c_n1</span><span class="p">,</span> <span class="n">c_2</span><span class="p">,</span> <span class="n">c_n2</span><span class="p">,</span> <span class="n">c_3</span><span class="p">,</span> <span class="n">c_n3</span><span class="p">,</span> <span class="n">c_tst1</span><span class="p">,</span> <span class="n">c_tst2</span><span class="p">,</span> <span class="n">c_tst3</span><span class="p">,</span> <span class="n">z_1</span><span class="p">,</span>
+			  <span class="n">deltat</span><span class="p">,</span> <span class="n">Kd</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">lamd1</span><span class="p">,</span> <span class="n">lamd2</span><span class="p">,</span> <span class="n">rho_s</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">frac</span><span class="p">,</span> <span class="n">source1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		nonlinear system of equations for first radionuclide with half life lamd1.</span>
+<span class="sd">		Includes 3 phases: dissolved, suspended, and sediment. The velocity term</span>
+<span class="sd">		is changed from u_ to z_1 as it uses the mixedfunctionspace velocity</span>
+<span class="sd">		from the shallow water equation. Everything else is kept same.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="c1"># dissolved phase</span>
+		<span class="n">Form</span> <span class="o">=</span> <span class="p">((</span><span class="n">c_1</span> <span class="o">-</span> <span class="n">c_n1</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z_1</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">nabla_grad</span><span class="p">(</span><span class="n">c_1</span><span class="p">)),</span> <span class="n">c_tst1</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">Kd</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">c_1</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">c_tst1</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">k1</span><span class="o">*</span><span class="n">c_1</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">k2</span><span class="o">*</span><span class="n">c_2</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">k2</span><span class="o">*</span><span class="n">c_3</span><span class="o">*</span><span class="n">L</span><span class="o">*</span><span class="n">rho_s</span><span class="o">*</span><span class="n">frac</span><span class="o">*</span><span class="n">phi</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_1</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">source1</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
+
+		<span class="c1"># suspended phase</span>
+		<span class="n">Form</span> <span class="o">+=</span> <span class="p">((</span><span class="n">c_2</span> <span class="o">-</span> <span class="n">c_n2</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z_1</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">nabla_grad</span><span class="p">(</span><span class="n">c_2</span><span class="p">)),</span> <span class="n">c_tst2</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">Kd</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">c_2</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">c_tst2</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">-</span> <span class="n">k1</span><span class="o">*</span><span class="n">c_1</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">k2</span><span class="o">*</span><span class="n">c_2</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
 		<span class="o">+</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_2</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
 
 		<span class="c1"># sediment phase</span>
@@ -779,14 +1115,16 @@ in the Fireframe project. These forms serve as inspiration and coupling tools fo
 		<span class="k">return</span> <span class="n">Form</span>
 
 	<span class="k">def</span> <span class="nf">form2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d_1</span><span class="p">,</span> <span class="n">d_n1</span><span class="p">,</span> <span class="n">d_2</span><span class="p">,</span> <span class="n">d_n2</span><span class="p">,</span> <span class="n">d_3</span><span class="p">,</span> <span class="n">d_n3</span><span class="p">,</span> <span class="n">d_tst1</span><span class="p">,</span> <span class="n">d_tst2</span><span class="p">,</span> <span class="n">d_tst3</span><span class="p">,</span> <span class="n">c_n1</span><span class="p">,</span> <span class="n">c_n2</span><span class="p">,</span>
-				<span class="n">u_</span><span class="p">,</span> <span class="n">c_n3</span><span class="p">,</span> <span class="n">deltat</span><span class="p">,</span> <span class="n">Kd</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">lamd1</span><span class="p">,</span> <span class="n">lamd2</span><span class="p">,</span> <span class="n">rho_s</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">frac</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+				<span class="n">z_1</span><span class="p">,</span> <span class="n">c_n3</span><span class="p">,</span> <span class="n">deltat</span><span class="p">,</span> <span class="n">Kd</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">lamd1</span><span class="p">,</span> <span class="n">lamd2</span><span class="p">,</span> <span class="n">rho_s</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">frac</span><span class="p">,</span> <span class="n">source1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 		<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">		manufactured equation for nonlinear system of equations for second radionuclide with half life lamd2.</span>
-<span class="sd">		Includes 3 phases: dissolved, suspended, and sediment. No source term.</span>
+<span class="sd">		nonlinear system of equations for second radionuclide with half life lamd2.</span>
+<span class="sd">		Includes 3 phases: dissolved, suspended, and sediment. The velocity term</span>
+<span class="sd">		is changed from u_ to z_1 as it uses the mixedfunctionspace velocity</span>
+<span class="sd">		from the shallow water equation. Everything else is kept same.</span>
 <span class="sd">		&quot;&quot;&quot;</span>
 		<span class="c1"># dissolved phase</span>
 		<span class="n">Form</span> <span class="o">=</span> <span class="p">((</span><span class="n">d_1</span> <span class="o">-</span> <span class="n">d_n1</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u_</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">nabla_grad</span><span class="p">(</span><span class="n">d_1</span><span class="p">)),</span> <span class="n">d_tst1</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z_1</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">nabla_grad</span><span class="p">(</span><span class="n">d_1</span><span class="p">)),</span> <span class="n">d_tst1</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
 		<span class="o">+</span> <span class="n">Kd</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">d_1</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">d_tst1</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
 		<span class="o">+</span> <span class="n">k1</span><span class="o">*</span><span class="n">d_1</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
 		<span class="o">-</span> <span class="n">k2</span><span class="o">*</span><span class="n">d_2</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
@@ -796,7 +1134,7 @@ in the Fireframe project. These forms serve as inspiration and coupling tools fo
 
 		<span class="c1"># suspended phase</span>
 		<span class="n">Form</span> <span class="o">+=</span> <span class="p">((</span><span class="n">d_2</span> <span class="o">-</span> <span class="n">d_n2</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">u_</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">nabla_grad</span><span class="p">(</span><span class="n">d_2</span><span class="p">)),</span> <span class="n">d_tst2</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
+		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z_1</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">nabla_grad</span><span class="p">(</span><span class="n">d_2</span><span class="p">)),</span> <span class="n">d_tst2</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
 		<span class="o">+</span> <span class="n">Kd</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">d_2</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">d_tst2</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
 		<span class="o">-</span> <span class="n">k1</span><span class="o">*</span><span class="n">d_1</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
 		<span class="o">+</span> <span class="n">k2</span><span class="o">*</span><span class="n">d_2</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
@@ -881,78 +1219,6 @@ in the Fireframe project. These forms serve as inspiration and coupling tools fo
 		<span class="o">+</span> <span class="n">A</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">u_mid</span><span class="p">)</span><span class="o">+</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">u_mid</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">z_tst1</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
 		<span class="o">-</span> <span class="n">A</span><span class="o">*</span><span class="p">(</span><span class="mf">2.</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">u_mid</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">Identity</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">u_mid</span><span class="p">)),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">z_tst1</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
 		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z_tst1</span><span class="p">,</span> <span class="n">tau</span><span class="o">*</span><span class="n">magnitude</span><span class="o">/</span><span class="p">(</span><span class="n">H</span><span class="p">)</span><span class="o">*</span><span class="n">u_mid</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
-
-		<span class="k">return</span> <span class="n">Form</span>
-
-<span class="k">class</span> <span class="nc">radio_transport_hydro</span><span class="p">(</span><span class="n">PDESubsystem</span><span class="p">):</span>
-
-	<span class="k">def</span> <span class="nf">form1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c_1</span><span class="p">,</span> <span class="n">c_n1</span><span class="p">,</span> <span class="n">c_2</span><span class="p">,</span> <span class="n">c_n2</span><span class="p">,</span> <span class="n">c_3</span><span class="p">,</span> <span class="n">c_n3</span><span class="p">,</span> <span class="n">c_tst1</span><span class="p">,</span> <span class="n">c_tst2</span><span class="p">,</span> <span class="n">c_tst3</span><span class="p">,</span> <span class="n">z_1</span><span class="p">,</span>
-			  <span class="n">deltat</span><span class="p">,</span> <span class="n">Kd</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">lamd1</span><span class="p">,</span> <span class="n">lamd2</span><span class="p">,</span> <span class="n">rho_s</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">frac</span><span class="p">,</span> <span class="n">source1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-		<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">		nonlinear system of equations for first radionuclide with half life lamd1.</span>
-<span class="sd">		Includes 3 phases: dissolved, suspended, and sediment. The velocity term</span>
-<span class="sd">		is changed from u_ to z_1 as it uses the mixedfunctionspace velocity</span>
-<span class="sd">		from the shallow water equation. Everything else is kept same.</span>
-<span class="sd">		&quot;&quot;&quot;</span>
-		<span class="c1"># dissolved phase</span>
-		<span class="n">Form</span> <span class="o">=</span> <span class="p">((</span><span class="n">c_1</span> <span class="o">-</span> <span class="n">c_n1</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z_1</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">nabla_grad</span><span class="p">(</span><span class="n">c_1</span><span class="p">)),</span> <span class="n">c_tst1</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">Kd</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">c_1</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">c_tst1</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">k1</span><span class="o">*</span><span class="n">c_1</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">-</span> <span class="n">k2</span><span class="o">*</span><span class="n">c_2</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">-</span> <span class="n">k2</span><span class="o">*</span><span class="n">c_3</span><span class="o">*</span><span class="n">L</span><span class="o">*</span><span class="n">rho_s</span><span class="o">*</span><span class="n">frac</span><span class="o">*</span><span class="n">phi</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_1</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">-</span> <span class="n">source1</span><span class="o">*</span><span class="n">c_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
-
-		<span class="c1"># suspended phase</span>
-		<span class="n">Form</span> <span class="o">+=</span> <span class="p">((</span><span class="n">c_2</span> <span class="o">-</span> <span class="n">c_n2</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z_1</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">nabla_grad</span><span class="p">(</span><span class="n">c_2</span><span class="p">)),</span> <span class="n">c_tst2</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">Kd</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">c_2</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">c_tst2</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">-</span> <span class="n">k1</span><span class="o">*</span><span class="n">c_1</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">k2</span><span class="o">*</span><span class="n">c_2</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_2</span><span class="o">*</span><span class="n">c_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
-
-		<span class="c1"># sediment phase</span>
-		<span class="n">Form</span> <span class="o">+=</span> <span class="p">((</span><span class="n">c_3</span> <span class="o">-</span> <span class="n">c_n3</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">c_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">-</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="n">L</span> <span class="o">*</span> <span class="n">rho_s</span> <span class="o">*</span> <span class="n">frac</span><span class="p">))</span> <span class="o">*</span> <span class="n">k1</span><span class="o">*</span><span class="n">c_1</span><span class="o">*</span><span class="n">c_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">k2</span><span class="o">*</span><span class="n">c_1</span><span class="o">*</span><span class="n">phi</span><span class="o">*</span><span class="n">c_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_3</span><span class="o">*</span><span class="n">c_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
-
-		<span class="k">return</span> <span class="n">Form</span>
-
-	<span class="k">def</span> <span class="nf">form2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d_1</span><span class="p">,</span> <span class="n">d_n1</span><span class="p">,</span> <span class="n">d_2</span><span class="p">,</span> <span class="n">d_n2</span><span class="p">,</span> <span class="n">d_3</span><span class="p">,</span> <span class="n">d_n3</span><span class="p">,</span> <span class="n">d_tst1</span><span class="p">,</span> <span class="n">d_tst2</span><span class="p">,</span> <span class="n">d_tst3</span><span class="p">,</span> <span class="n">c_n1</span><span class="p">,</span> <span class="n">c_n2</span><span class="p">,</span>
-				<span class="n">z_1</span><span class="p">,</span> <span class="n">c_n3</span><span class="p">,</span> <span class="n">deltat</span><span class="p">,</span> <span class="n">Kd</span><span class="p">,</span> <span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">lamd1</span><span class="p">,</span> <span class="n">lamd2</span><span class="p">,</span> <span class="n">rho_s</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">frac</span><span class="p">,</span> <span class="n">source1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-		<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">		nonlinear system of equations for second radionuclide with half life lamd2.</span>
-<span class="sd">		Includes 3 phases: dissolved, suspended, and sediment. The velocity term</span>
-<span class="sd">		is changed from u_ to z_1 as it uses the mixedfunctionspace velocity</span>
-<span class="sd">		from the shallow water equation. Everything else is kept same.</span>
-<span class="sd">		&quot;&quot;&quot;</span>
-		<span class="c1"># dissolved phase</span>
-		<span class="n">Form</span> <span class="o">=</span> <span class="p">((</span><span class="n">d_1</span> <span class="o">-</span> <span class="n">d_n1</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z_1</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">nabla_grad</span><span class="p">(</span><span class="n">d_1</span><span class="p">)),</span> <span class="n">d_tst1</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">Kd</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">d_1</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">d_tst1</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">k1</span><span class="o">*</span><span class="n">d_1</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">-</span> <span class="n">k2</span><span class="o">*</span><span class="n">d_2</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">-</span> <span class="n">k2</span><span class="o">*</span><span class="n">d_3</span><span class="o">*</span><span class="n">L</span><span class="o">*</span><span class="n">rho_s</span><span class="o">*</span><span class="n">frac</span><span class="o">*</span><span class="n">phi</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">-</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_n1</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">lamd2</span><span class="o">*</span><span class="n">d_1</span><span class="o">*</span><span class="n">d_tst1</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
-
-		<span class="c1"># suspended phase</span>
-		<span class="n">Form</span> <span class="o">+=</span> <span class="p">((</span><span class="n">d_2</span> <span class="o">-</span> <span class="n">d_n2</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">fd</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">z_1</span><span class="p">,</span> <span class="n">fd</span><span class="o">.</span><span class="n">nabla_grad</span><span class="p">(</span><span class="n">d_2</span><span class="p">)),</span> <span class="n">d_tst2</span><span class="p">)</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">Kd</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">d_2</span><span class="p">),</span> <span class="n">fd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="n">d_tst2</span><span class="p">))</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">-</span> <span class="n">k1</span><span class="o">*</span><span class="n">d_1</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">k2</span><span class="o">*</span><span class="n">d_2</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">-</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_n2</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">lamd2</span><span class="o">*</span><span class="n">d_2</span><span class="o">*</span><span class="n">d_tst2</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
-
-		<span class="c1"># sediment phase</span>
-		<span class="n">Form</span> <span class="o">+=</span> <span class="p">((</span><span class="n">d_3</span> <span class="o">-</span> <span class="n">d_n3</span><span class="p">)</span> <span class="o">/</span> <span class="n">deltat</span><span class="p">)</span><span class="o">*</span><span class="n">d_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">-</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="n">L</span> <span class="o">*</span> <span class="n">rho_s</span> <span class="o">*</span> <span class="n">frac</span><span class="p">))</span> <span class="o">*</span> <span class="n">k1</span><span class="o">*</span><span class="n">d_1</span><span class="o">*</span><span class="n">d_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">k2</span><span class="o">*</span><span class="n">d_1</span><span class="o">*</span><span class="n">phi</span><span class="o">*</span><span class="n">d_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">-</span> <span class="n">lamd1</span><span class="o">*</span><span class="n">c_n3</span><span class="o">*</span><span class="n">d_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span> \
-		<span class="o">+</span> <span class="n">lamd2</span><span class="o">*</span><span class="n">d_3</span><span class="o">*</span><span class="n">d_tst3</span><span class="o">*</span><span class="n">fd</span><span class="o">.</span><span class="n">dx</span>
 
 		<span class="k">return</span> <span class="n">Form</span>
 </pre></div>

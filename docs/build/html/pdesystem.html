@@ -277,7 +277,7 @@ dictionary.</p>
 
 <dl class="method">
 <dt id="fireframe.PDESystem.PDESystem.dt_test">
-<code class="descname">dt_test</code><span class="sig-paren">(</span><em>var</em>, <em>c_exact</em>, <em>dt_list</em>, <em>f_dict</em>, <em>index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.dt_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.dt_test" title="Permalink to this definition">¶</a></dt>
+<code class="descname">dt_test</code><span class="sig-paren">(</span><em>var</em>, <em>expr</em>, <em>dt_list</em>, <em>f_dict</em>, <em>index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.dt_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.dt_test" title="Permalink to this definition">¶</a></dt>
 <dd><p>Description:</p>
 <p>This function calculates the l2 norm between the exact mms solution and
 the numerical solution against incremental values of dt.</p>
@@ -287,7 +287,7 @@ the numerical solution against incremental values of dt.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Params var:</th><td class="field-body">the variable that will be tested in the MMS. ex. 'cd'</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Params c_exact:</th><td class="field-body">an expression used to express the analytical manufactured &quot;solution&quot;</td>
+<tr class="field-even field"><th class="field-name">Params expr:</th><td class="field-body">an expression used to express the analytical manufactured &quot;solution&quot;</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Params f_dict:</th><td class="field-body">this dictionary converts sympy functions into firedrake functions. Keys are strings representing sympy expressions and values are firedrake functions ex. {'exp' : fd.exp}</td>
 </tr>
@@ -301,7 +301,7 @@ the numerical solution against incremental values of dt.</p>
 
 <dl class="method">
 <dt id="fireframe.PDESystem.PDESystem.dx_test">
-<code class="descname">dx_test</code><span class="sig-paren">(</span><em>var</em>, <em>c_exact</em>, <em>meshes</em>, <em>f_dict</em>, <em>index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.dx_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.dx_test" title="Permalink to this definition">¶</a></dt>
+<code class="descname">dx_test</code><span class="sig-paren">(</span><em>var</em>, <em>expr</em>, <em>meshes</em>, <em>f_dict</em>, <em>index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.dx_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.dx_test" title="Permalink to this definition">¶</a></dt>
 <dd><p>Description:</p>
 <p>This function calculates the l2 norm between the exact mms solution and
 the numerical solution against incremental values of dx.</p>
@@ -311,7 +311,7 @@ the numerical solution against incremental values of dx.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Params var:</th><td class="field-body">the variable that will be tested in the MMS. ex. 'cd'</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Params c_exact:</th><td class="field-body">an expression used to express the analytical manufactured &quot;solution&quot;</td>
+<tr class="field-even field"><th class="field-name">Params expr:</th><td class="field-body">an expression used to express the analytical manufactured &quot;solution&quot;</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Params f_dict:</th><td class="field-body">this dictionary converts sympy functions into firedrake functions. Keys are strings representing sympy expressions and values are firedrake functions ex. {'exp' : fd.exp}</td>
 </tr>
@@ -551,7 +551,7 @@ This function calls on each of the available pdesubsystems and solve for their r
 
 <dl class="method">
 <dt id="fireframe.PDESystem.PDESystem.test_mms">
-<code class="descname">test_mms</code><span class="sig-paren">(</span><em>var</em>, <em>c_exact</em>, <em>spatial=False</em>, <em>temporal=False</em>, <em>f_dict={}</em>, <em>dt_list=[]</em>, <em>meshes=[]</em>, <em>plot=False</em>, <em>index=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.test_mms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.test_mms" title="Permalink to this definition">¶</a></dt>
+<code class="descname">test_mms</code><span class="sig-paren">(</span><em>var</em>, <em>expr</em>, <em>spatial=False</em>, <em>temporal=False</em>, <em>f_dict={}</em>, <em>dt_list=[]</em>, <em>meshes=[]</em>, <em>plot=False</em>, <em>index=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fireframe/PDESystem.html#PDESystem.test_mms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fireframe.PDESystem.PDESystem.test_mms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Description
 This function allows users to test a PDESystem's variable by asking for a manufactured
 analytical solution. This function can either be set to test against spatial or temporal
@@ -562,7 +562,7 @@ discretization.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Params var:</th><td class="field-body">the variable that will be tested in the MMS. ex. 'cd'</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Params c_exact:</th><td class="field-body">an expression used to express the analytical manufactured &quot;solution&quot;</td>
+<tr class="field-even field"><th class="field-name">Params expr:</th><td class="field-body">an expression used to express the analytical manufactured &quot;solution&quot;</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Params spatial:</th><td class="field-body">a boolean switch to determine if the mms test is against dt</td>
 </tr>
