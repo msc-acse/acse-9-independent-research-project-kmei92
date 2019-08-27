@@ -37,6 +37,9 @@ from PDESubsystem import *
 
 from pdeforms import *
 ```
+
+Follow the examples in the demo folder to familiarize yourself with Fireframe's functionality and as a starting point to solve your own PDE problems!
+
 ## Documentation
 The Fireframe documentation can be compiled using Sphinx by running
 ```bash
@@ -59,6 +62,7 @@ Fireframe relies on the following external libraries:
 * __fireframe__		- main repository containing core modules `PDESystem`, `PDESubsystem` and `pdeforms`
 * __imgs__		- image files
 * __meshes__		- all gmsh files used in demonstration examples
+* __report__		- contains the final report, detailing this project's motivations, software design, analysis, and conclusions 
 * __tests__		- pytest / travis test file
 
 ## Author and Course Information
