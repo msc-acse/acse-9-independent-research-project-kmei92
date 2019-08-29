@@ -22,7 +22,7 @@ For a repository of all the variational forms used in the demonstration examples
 ```fireframe.pdeforms```
 These provide examples of how to translate mathematical expressions of partial differential equation into UFL syntax.
 
-The overall process of setting up a process in Fireframe is as follows:
+The overall process of setting up a problem in Fireframe is as follows:
 <img src="imgs/acse9-fireframe-process.jpg" width="600" height="400" />
 
 ## Installation instructions
