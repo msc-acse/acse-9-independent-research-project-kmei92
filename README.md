@@ -18,6 +18,13 @@ Example problems are presented and solved, including:
  - A radionuclide transport equation coupled to the shallow water equation (see: demo/hydrodynamics_demo.ipynb)
  - A method of manufactured solutions verification on the radionuclide transport problem (see: demo/MMS_transport/demo.ipynb)
 
+For a repository of all the variational forms used in the demonstration examples, look in:
+```fireframe.pdeforms```
+These provide examples of how to translate mathematical expressions of partial differential equation into UFL syntax.
+
+The overall process of setting up a process in Fireframe is as follows:
+<img src="imgs/acse9-fireframe-process.jpg" width="600" height="400" />
+
 ## Installation instructions
 In order to use Fireframe, please first install the latest version of Firedrake [here](https://www.firedrakeproject.org/download.html)
 
@@ -37,7 +44,6 @@ from PDESubsystem import *
 
 from pdeforms import *
 ```
-
 Follow the examples in the demo folder to familiarize yourself with Fireframe's functionality and as a starting point to solve your own PDE problems!
 
 ## Documentation
